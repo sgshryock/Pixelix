@@ -1843,7 +1843,11 @@ static void handleFileDelete(AsyncWebServerRequest* request)
 
 /**
  * Check the given hostname and returns whether it is valid or not.
- * Validation is according to RFC952.
+ * Validation is according to RFC952:
+ * - Must start with a letter (A-Z, a-z)
+ * - May contain letters, digits (0-9), and hyphens (-)
+ * - Must not end with a hyphen
+ * - Length must be within configured limits
  *
  * @param[in] hostname  Hostname which to validate
  *
@@ -1858,6 +1862,11 @@ static bool isValidHostname(const String& hostname)
 
     if ((MIN_HOSTNAME_LENGTH > hostname.length()) ||
         (MAX_HOSTNAME_LENGTH < hostname.length()))
+    {
+        isValid = false;
+    }
+    /* Check for trailing hyphen (RFC952 requirement) */
+    else if ('-' == hostname[hostname.length() - 1U])
     {
         isValid = false;
     }
