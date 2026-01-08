@@ -297,26 +297,34 @@ void PluginMgr::prepareSlotByConfiguration(uint8_t slotId, const JsonObject& jso
     if (false == jsonName.is<String>())
     {
         LOG_ERROR("Slot %u: Name is missing.", slotId);
+        return;
     }
-    else if (false == jsonUid.is<uint16_t>())
+
+    if (false == jsonUid.is<uint16_t>())
     {
         LOG_ERROR("Slot %u: UID is missing.", slotId);
+        return;
     }
-    else if (false == jsonAlias.is<String>())
+
+    if (false == jsonAlias.is<String>())
     {
         LOG_ERROR("Slot %u: Alias is missing.", slotId);
+        return;
     }
-    else if (false == jsonFontType.is<String>())
+
+    if (false == jsonFontType.is<String>())
     {
         LOG_ERROR("Slot %u: Font type is missing.", slotId);
+        return;
     }
-    else if (false == jsonDuration.is<uint32_t>())
+
+    if (false == jsonDuration.is<uint32_t>())
     {
         LOG_ERROR("Slot %u: Slot duration is missing.", slotId);
+        return;
     }
-    else
-    {
-        DisplayMgr& displayMgr = DisplayMgr::getInstance();
+
+    DisplayMgr& displayMgr = DisplayMgr::getInstance();
         const char* name       = jsonName.as<const char*>();
         uint32_t    duration   = jsonDuration.as<uint32_t>();
         bool        isSticky   = false;
@@ -399,7 +407,6 @@ void PluginMgr::prepareSlotByConfiguration(uint8_t slotId, const JsonObject& jso
         {
             displayMgr.disableSlot(slotId);
         }
-    }
 }
 
 bool PluginMgr::install(IPluginMaintenance* plugin, uint8_t slotId)
