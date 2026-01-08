@@ -225,6 +225,30 @@ void RestApi::error(AsyncWebServerRequest* request)
  * Local Functions
  *****************************************************************************/
 
+
+/**
+ * Parse a string to a boolean value.
+ *
+ * @param[in]  str       The string to parse ("true" or "false").
+ * @param[out] outValue  The parsed boolean value.
+ *
+ * @return true if parsing was successful, false otherwise.
+ */
+static bool parseStringBool(const String& str, bool& outValue)
+{
+    if (str == "true")
+    {
+        outValue = true;
+        return true;
+    }
+    else if (str == "false")
+    {
+        outValue = false;
+        return true;
+    }
+    return false;
+}
+
 /**
  * Activate next fade effect.
  * POST \c "/api/v1/display/fadeEffect"
@@ -428,15 +452,7 @@ static void handleSlot(AsyncWebServerRequest* request)
                         const String& stickyFlagStr = request->arg("sticky");
                         bool          stickyFlag    = false;
 
-                        if (stickyFlagStr == "true")
-                        {
-                            stickyFlag = true;
-                        }
-                        else if (stickyFlagStr == "false")
-                        {
-                            stickyFlag = false;
-                        }
-                        else
+                        if (false == parseStringBool(stickyFlagStr, stickyFlag))
                         {
                             RestUtil::prepareRspError(jsonDoc, "Invalid sticky flag.");
                             httpStatusCode = HttpStatus::STATUS_CODE_METHOD_NOT_ALLOWED;
@@ -478,15 +494,7 @@ static void handleSlot(AsyncWebServerRequest* request)
                         const String& disableFlagStr = request->arg("disable");
                         bool          disableFlag    = false;
 
-                        if (disableFlagStr == "true")
-                        {
-                            disableFlag = true;
-                        }
-                        else if (disableFlagStr == "false")
-                        {
-                            disableFlag = false;
-                        }
-                        else
+                        if (false == parseStringBool(disableFlagStr, disableFlag))
                         {
                             RestUtil::prepareRspError(jsonDoc, "Invalid disable flag.");
                             httpStatusCode = HttpStatus::STATUS_CODE_METHOD_NOT_ALLOWED;

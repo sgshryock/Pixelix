@@ -79,6 +79,16 @@ typedef struct
 
 } SensorTopicRunData;
 
+
+/** Update period for temperature sensor data in milliseconds. */
+static const uint32_t TEMPERATURE_SENSOR_UPDATE_PERIOD_MS = 30000U;
+
+/** Update period for humidity sensor data in milliseconds. */
+static const uint32_t HUMIDITY_SENSOR_UPDATE_PERIOD_MS    = 30000U;
+
+/** Default sensor data update period in milliseconds. */
+static const uint32_t DEFAULT_SENSOR_UPDATE_PERIOD_MS     = 10000U;
+
 /******************************************************************************
  * Prototypes
  *****************************************************************************/
