@@ -66,15 +66,12 @@
 
 void WsCmdSlot::execute(AsyncWebSocket* server, uint32_t clientId)
 {
-    if (nullptr == server)
+    /* Validate request parameters using base class helper */
+    if (false == validateRequest(server, clientId, m_isError))
     {
+        m_isError = false;
+        m_parCnt  = 0U;
         return;
-    }
-
-    /* Any error happended? */
-    if (true == m_isError)
-    {
-        sendNegativeResponse(server, clientId, "\"Parameter invalid.\"");
     }
     else
     {
