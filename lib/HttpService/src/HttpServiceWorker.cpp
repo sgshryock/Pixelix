@@ -78,7 +78,13 @@ void HttpServiceWorker::process(WorkerQueues* queues)
         /* Wait for a new HTTP request. */
         if (true == queues->requestQueue.receive(&request, MAX_WAIT_TIME))
         {
-            WorkerResponse workerRsp;
+            WorkerResponse workerRsp = {
+                INVALID_HTTP_JOB_ID,    /* jobId */
+                HTTP_CODE_OK,           /* statusCode */
+                nullptr,                /* payload */
+                0U,                     /* size */
+                0U                      /* capacity */
+            };
 
             /* Check if the job is aborted. */
             if (true == isJobAborted(queues->abortJobQueue, request.jobId))
@@ -102,8 +108,9 @@ void HttpServiceWorker::process(WorkerQueues* queues)
                     {
                         delete[] workerRsp.payload;
 
-                        workerRsp.payload = nullptr;
-                        workerRsp.size    = 0U;
+                        workerRsp.payload  = nullptr;
+                        workerRsp.size     = 0U;
+                        workerRsp.capacity = 0U;
                     }
                 }
                 else
@@ -241,31 +248,45 @@ void HttpServiceWorker::handleHttpResponse(HTTPClient& httpClient, IHttpResponse
 
                     handler->onResponse(index, isFinal, buffer, static_cast<size_t>(read));
                 }
-                /* If its the first chunk, allocate the payload buffer. */
-                else if (nullptr == workerRsp.payload)
-                {
-                    workerRsp.payload = new (std::nothrow) uint8_t[read];
-
-                    if (nullptr != workerRsp.payload)
-                    {
-                        memcpy(workerRsp.payload, buffer, read);
-                        workerRsp.size = read;
-                    }
-                }
-                /* Subsequent chunks, reallocate the payload buffer. */
+                /* Store payload internally with exponential buffer growth to reduce heap fragmentation. */
                 else
                 {
-                    uint8_t* newPayload = new (std::nothrow) uint8_t[workerRsp.size + read];
+                    const size_t INITIAL_BUFFER_SIZE = 1024U;
+                    size_t       requiredSize        = workerRsp.size + static_cast<size_t>(read);
 
-                    if (nullptr != newPayload)
+                    /* Need to allocate or grow buffer? */
+                    if (requiredSize > workerRsp.capacity)
                     {
-                        memcpy(newPayload, workerRsp.payload, workerRsp.size);
-                        memcpy(newPayload + workerRsp.size, buffer, read);
+                        /* Calculate new capacity using exponential growth (double each time). */
+                        size_t newCapacity = (0U == workerRsp.capacity) ? INITIAL_BUFFER_SIZE : workerRsp.capacity * 2U;
 
-                        delete[] workerRsp.payload;
+                        /* Ensure capacity is sufficient for required size. */
+                        while (newCapacity < requiredSize)
+                        {
+                            newCapacity *= 2U;
+                        }
 
-                        workerRsp.payload  = newPayload;
-                        workerRsp.size    += read;
+                        uint8_t* newPayload = new (std::nothrow) uint8_t[newCapacity];
+
+                        if (nullptr != newPayload)
+                        {
+                            /* Copy existing data if any. */
+                            if ((nullptr != workerRsp.payload) && (0U < workerRsp.size))
+                            {
+                                memcpy(newPayload, workerRsp.payload, workerRsp.size);
+                            }
+
+                            delete[] workerRsp.payload;
+                            workerRsp.payload  = newPayload;
+                            workerRsp.capacity = newCapacity;
+                        }
+                    }
+
+                    /* Append new data if buffer is available. */
+                    if ((nullptr != workerRsp.payload) && (requiredSize <= workerRsp.capacity))
+                    {
+                        memcpy(workerRsp.payload + workerRsp.size, buffer, read);
+                        workerRsp.size = requiredSize;
                     }
                 }
             }

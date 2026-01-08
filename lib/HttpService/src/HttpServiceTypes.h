@@ -101,6 +101,7 @@ typedef struct
     t_http_codes statusCode; /**< HTTP status code of the response. */
     uint8_t*     payload;    /**< Payload of the HTTP response. */
     size_t       size;       /**< Size of the payload in byte. */
+    size_t       capacity;   /**< Capacity of the payload buffer in byte (for efficient reallocation). */
 
 } WorkerResponse;
 
