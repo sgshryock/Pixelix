@@ -114,6 +114,7 @@ static HomeAssistantDiscoveryStatus disableHomeAssistantAutomaticDiscovery();
 static void                         handleHomeAssistantAutomaticDiscoveryDisable(AsyncWebServerRequest* request);
 static HomeAssistantDiscoveryStatus getHomeAssistantAutomaticDiscoveryStatus();
 static void                         handleHomeAssistantAutomaticDiscoveryStatus(AsyncWebServerRequest* request);
+static bool                         isPathSafe(const String& path);
 
 /******************************************************************************
  * Local Variables
@@ -150,23 +151,53 @@ static const ContentTypeElem contentTypeTable[] = {
 
 void RestApi::init(AsyncWebServer& srv)
 {
+    SettingsService& settings = SettingsService::getInstance();
+    String           webLoginUser;
+    String           webLoginPassword;
+
+    /* Get authentication credentials */
+    if (false == settings.open(true))
+    {
+        webLoginUser     = settings.getWebLoginUser().getDefault();
+        webLoginPassword = settings.getWebLoginPassword().getDefault();
+    }
+    else
+    {
+        webLoginUser     = settings.getWebLoginUser().getValue();
+        webLoginPassword = settings.getWebLoginPassword().getValue();
+        settings.close();
+    }
+
+    /* Public endpoints (read-only, non-sensitive) */
     (void)srv.on("/rest/api/v1/display/fadeEffect", handleFadeEffect);
     (void)srv.on("/rest/api/v1/display/slots", handleSlots);
     (void)srv.on("/rest/api/v1/display/slot/*", handleSlot);
-    (void)srv.on("/rest/api/v1/plugin/install", handlePluginInstall);
-    (void)srv.on("/rest/api/v1/plugin/uninstall", handlePluginUninstall);
     (void)srv.on("/rest/api/v1/plugins", handlePlugins);
     (void)srv.on("/rest/api/v1/sensors", handleSensors);
-    (void)srv.on("/rest/api/v1/settings", handleSettings);
-    (void)srv.on("/rest/api/v1/setting", handleSetting);
     (void)srv.on("/rest/api/v1/status", handleStatus);
-    (void)srv.on("/rest/api/v1/fs/file", HTTP_GET, handleFileGet);
-    (void)srv.on("/rest/api/v1/fs/file", HTTP_POST, handleFilePost, uploadHandler);
-    (void)srv.on("/rest/api/v1/fs/file", HTTP_DELETE, handleFileDelete);
-    (void)srv.on("/rest/api/v1/fs", handleFilesystem);
-    (void)srv.on("/rest/api/v1/partitionChange", HTTP_POST, handlePartitionChange);
-    (void)srv.on("/rest/api/v1/homeAssistant/automaticDiscovery/disable", HTTP_POST, handleHomeAssistantAutomaticDiscoveryDisable);
     (void)srv.on("/rest/api/v1/homeAssistant/automaticDiscovery/status", HTTP_GET, handleHomeAssistantAutomaticDiscoveryStatus);
+
+    /* Protected endpoints (require authentication) */
+    (void)srv.on("/rest/api/v1/plugin/install", handlePluginInstall)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/plugin/uninstall", handlePluginUninstall)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/settings", handleSettings)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/setting", handleSetting)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/fs/file", HTTP_GET, handleFileGet)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/fs/file", HTTP_POST, handleFilePost, uploadHandler)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/fs/file", HTTP_DELETE, handleFileDelete)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/fs", handleFilesystem)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/partitionChange", HTTP_POST, handlePartitionChange)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/homeAssistant/automaticDiscovery/disable", HTTP_POST, handleHomeAssistantAutomaticDiscoveryDisable)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
 }
 
 /**
@@ -859,7 +890,15 @@ static void handleSetting(AsyncWebServerRequest* request)
             case KeyValue::TYPE_STRING: {
                 KeyValueString* kvStr = static_cast<KeyValueString*>(setting);
 
-                dataObj["value"]      = kvStr->getValue();
+                /* Redact secret values - only indicate that a value exists */
+                if (true == kvStr->isSecret())
+                {
+                    dataObj["value"] = (kvStr->getValue().isEmpty()) ? "" : "********";
+                }
+                else
+                {
+                    dataObj["value"] = kvStr->getValue();
+                }
                 dataObj["minlength"]  = kvStr->getMinLength();
                 dataObj["maxlength"]  = kvStr->getMaxLength();
                 dataObj["isSecret"]   = kvStr->isSecret();
@@ -1377,6 +1416,16 @@ static void handleFilesystem(AsyncWebServerRequest* request)
     {
         const String&  path              = request->arg("dir");
         const String&  pageStr           = request->arg("page");
+
+        /* Validate path to prevent directory traversal attacks */
+        if (false == isPathSafe(path))
+        {
+            RestUtil::prepareRspError(jsonDoc, "Invalid path: directory traversal not allowed.");
+            httpStatusCode = HttpStatus::STATUS_CODE_BAD_REQUEST;
+            RestUtil::sendJsonRsp(request, jsonDoc, httpStatusCode);
+            return;
+        }
+
         File           fdRoot            = FILESYSTEM.open(path, "r");
         JsonArray      jsonData          = jsonDoc.createNestedArray("data");
         const uint32_t DEFAULT_MAX_FILES = 15U;
@@ -1444,6 +1493,14 @@ static void handleFileGet(AsyncWebServerRequest* request)
     else
     {
         const String& path = request->arg("path");
+
+        /* Validate path to prevent directory traversal attacks */
+        if (false == isPathSafe(path))
+        {
+            RestUtil::prepareRspError(jsonDoc, "Invalid path: directory traversal not allowed.");
+            RestUtil::sendJsonRsp(request, jsonDoc, HttpStatus::STATUS_CODE_BAD_REQUEST);
+            return;
+        }
 
         LOG_INFO("File \"%s\" requested.", path.c_str());
 
@@ -1646,9 +1703,22 @@ static void handleFileDelete(AsyncWebServerRequest* request)
     {
         const char*   WILDCARD    = "*";
         const String& path        = request->arg("path");
+
+        /* Validate path to prevent directory traversal attacks.
+         * Note: We allow wildcards in filename, but check directory part for traversal.
+         */
         int32_t       lastSlash   = path.lastIndexOf('/');
         String        dir         = (0 <= lastSlash) ? path.substring(0U, static_cast<size_t>(lastSlash)) : "/";
         String        filename    = (0 <= lastSlash) ? path.substring(static_cast<size_t>(lastSlash + 1)) : path;
+
+        if (false == isPathSafe(dir))
+        {
+            RestUtil::prepareRspError(jsonDoc, "Invalid path: directory traversal not allowed.");
+            httpStatusCode = HttpStatus::STATUS_CODE_BAD_REQUEST;
+            RestUtil::sendJsonRsp(request, jsonDoc, httpStatusCode);
+            return;
+        }
+
         int32_t       wildcardPos = filename.indexOf('*');
         bool          anyRemoved  = false;
 
@@ -2075,4 +2145,28 @@ static void handleHomeAssistantAutomaticDiscoveryStatus(AsyncWebServerRequest* r
     }
 
     RestUtil::sendJsonRsp(request, jsonDoc, httpStatusCode);
+}
+
+/**
+ * Validate filesystem path to prevent directory traversal attacks.
+ *
+ * @param[in] path  Path to validate
+ *
+ * @return true if path is safe, false if path contains traversal sequences.
+ */
+static bool isPathSafe(const String& path)
+{
+    /* Reject paths containing directory traversal sequences */
+    if (path.indexOf("..") >= 0)
+    {
+        return false;
+    }
+
+    /* Ensure path starts with / for absolute paths within filesystem */
+    if ((false == path.isEmpty()) && ('/' != path.charAt(0)))
+    {
+        return false;
+    }
+
+    return true;
 }
