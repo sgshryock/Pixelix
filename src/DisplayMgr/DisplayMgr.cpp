@@ -145,10 +145,6 @@ bool DisplayMgr::begin()
     {
         isError = true;
     }
-    else
-    {
-        ;
-    }
 
     /* Process task not started yet? */
     if ((false == isError) &&
