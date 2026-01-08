@@ -70,6 +70,41 @@
  *****************************************************************************/
 
 /**
+ * Configuration structure for brightness-related settings.
+ * Groups all brightness limits and values for cleaner parameter passing.
+ */
+struct BrightnessConfig
+{
+    uint8_t  brightnessPercent;             /**< Current brightness level in percent [0-100]. */
+    uint8_t  minHardLimitPercent;           /**< Minimum brightness hard limit in percent. */
+    uint8_t  maxHardLimitPercent;           /**< Maximum brightness hard limit in percent. */
+    uint8_t  minSoftLimitPercent;           /**< Minimum brightness soft limit in percent. */
+    uint8_t  maxSoftLimitPercent;           /**< Maximum brightness soft limit in percent. */
+    uint16_t brightness;                    /**< Current brightness level in digits [0-255]. */
+    uint16_t minHardLimit;                  /**< Minimum brightness hard limit in digits. */
+    uint16_t maxHardLimit;                  /**< Maximum brightness hard limit in digits. */
+    uint16_t minSoftLimit;                  /**< Minimum brightness soft limit in digits. */
+    uint16_t maxSoftLimit;                  /**< Maximum brightness soft limit in digits. */
+
+    /**
+     * Default constructor initializes all values to zero.
+     */
+    BrightnessConfig() :
+        brightnessPercent(0U),
+        minHardLimitPercent(0U),
+        maxHardLimitPercent(0U),
+        minSoftLimitPercent(0U),
+        maxSoftLimitPercent(0U),
+        brightness(0U),
+        minHardLimit(0U),
+        maxHardLimit(0U),
+        minSoftLimit(0U),
+        maxSoftLimit(0U)
+    {
+    }
+};
+
+/**
  * The display manager is responsible for showing stuff in the right time on the
  * display. For this several time slots are provided. Each time slot can be
  * configured with a specific layout and contains the content to show.

@@ -169,12 +169,39 @@ protected:
 
     /**
      * Send negative response to the client.
-     * 
+     *
      * @param[in] server    Websocket server which is used to send a message to the client.
      * @param[in] clientId  The client id the message belongs to.
      * @param[in] msg       The negative response messsage.
      */
     void sendNegativeResponse(AsyncWebSocket* server, uint32_t clientId, const char* msg);
+
+    /**
+     * Validate request parameters and send error response if invalid.
+     * This is a helper method that can be called at the start of execute()
+     * to handle common validation pattern.
+     *
+     * @param[in] server    Websocket server
+     * @param[in] clientId  Websocket client ID
+     * @param[in] isError   Error flag to check
+     *
+     * @return true if validation passed (no error), false if error was sent
+     */
+    bool validateRequest(AsyncWebSocket* server, uint32_t clientId, bool isError)
+    {
+        if (nullptr == server)
+        {
+            return false;
+        }
+
+        if (true == isError)
+        {
+            sendNegativeResponse(server, clientId, "\"Parameter invalid.\"");
+            return false;
+        }
+
+        return true;
+    }
 
 private:
 
