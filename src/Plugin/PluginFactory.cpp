@@ -74,6 +74,13 @@ IPluginMaintenance* PluginFactory::createPlugin(const char* name, uint16_t uid)
     const PluginList::Element*  pluginTypeList          = PluginList::getList(pluginTypeListLength);
     uint8_t                     idx                     = 0U;
 
+    /* Check if maximum plugin count has been reached. */
+    if (m_plugins.size() >= MAX_PLUGINS)
+    {
+        LOG_ERROR("Maximum plugin count (%u) reached. Cannot create more plugins.", MAX_PLUGINS);
+        return nullptr;
+    }
+
     /* Walk through registry and find the requested plugin type. */
     while((nullptr == plugin) && (pluginTypeListLength > idx))
     {

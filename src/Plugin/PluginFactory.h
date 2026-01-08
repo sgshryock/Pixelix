@@ -115,6 +115,9 @@ private:
     /** List of plugins type. */
     typedef std::vector<IPluginMaintenance*> ListOfPlugins;
 
+    /** Maximum number of plugin instances to prevent unbounded memory growth. */
+    static const size_t MAX_PLUGINS = 64U;
+
     ListOfPlugins   m_plugins;  /**< List with all produced plugin objects. */
 
     PluginFactory(const PluginFactory& factory);

@@ -64,7 +64,8 @@
 
 bool HttpService::start()
 {
-    bool isSuccessful = true;
+    MutexGuard<Mutex> guard(m_mutex);
+    bool              isSuccessful = true;
 
     /* Is service already running? */
     if (true == m_isRunning)
