@@ -104,10 +104,26 @@ void RestUtil::sendJsonRsp(AsyncWebServerRequest* request, const JsonDocument& j
 
     if (nullptr != request)
     {
-        String content;
+        String                    content;
+        AsyncWebServerResponse*   response;
 
         (void)serializeJsonPretty(jsonDoc, content);
-        request->send(httpStatusCode, "application/json", content);
+        response = request->beginResponse(httpStatusCode, "application/json", content);
+
+        if (nullptr != response)
+        {
+            /* Add security headers */
+            response->addHeader("X-Content-Type-Options", "nosniff");
+            response->addHeader("X-Frame-Options", "SAMEORIGIN");
+            response->addHeader("X-XSS-Protection", "1; mode=block");
+
+            /* Add CORS headers - restrict to same-origin by default */
+            response->addHeader("Access-Control-Allow-Origin", "null");
+            response->addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+            response->addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+            request->send(response);
+        }
     }
 }
 
