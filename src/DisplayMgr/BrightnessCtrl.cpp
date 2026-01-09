@@ -99,14 +99,8 @@ void BrightnessCtrl::init(IDisplay& display, uint8_t minBrightnessHardLimit, uin
         updateBrightnessGoal();
     }
 
-    /* Apply initial brightness directly to display.
-     * This is safe because no display tasks are running yet at init time.
-     * Subsequent changes go through applyBrightnessToDisplay() called from update task.
-     */
-    if (nullptr != m_display)
-    {
-        m_display->setBrightness(m_brightness);
-    }
+    /* Apply initial brightness via command queue for consistent serialized access. */
+    DisplayCommandQueue::getInstance().setBrightnessSync(m_brightness);
 }
 
 bool BrightnessCtrl::enable(bool state)

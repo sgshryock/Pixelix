@@ -38,6 +38,7 @@
 #include "PluginMgr.h"
 
 #include <Display.h>
+#include <DisplayCommandQueue.h>
 #include <Logging.h>
 #include <ArduinoJson.h>
 #include <Util.h>
@@ -142,13 +143,13 @@ bool DisplayMgr::begin()
      */
     if (false == isError)
     {
-        IDisplay& display = Display::getInstance();
+        DisplayCommandQueue& displayQueue = DisplayCommandQueue::getInstance();
 
         m_doubleFrameBuffer.getSelectedFramebuffer().fillScreen(ColorDef::BLACK);
         m_doubleFrameBuffer.selectNextFramebuffer();
         m_doubleFrameBuffer.getSelectedFramebuffer().fillScreen(ColorDef::BLACK);
-        display.clear();
-        display.show();
+        displayQueue.clearSync();
+        displayQueue.showSync();
     }
 
     /* Process task not started yet? */
@@ -742,7 +743,7 @@ void DisplayMgr::displayOff()
     MutexGuard<MutexRecursive> guard1(m_mutexInterf);
     MutexGuard<MutexRecursive> guard2(m_mutexUpdate);
 
-    Display::getInstance().off();
+    DisplayCommandQueue::getInstance().offSync();
 }
 
 void DisplayMgr::displayOn()
@@ -750,7 +751,7 @@ void DisplayMgr::displayOn()
     MutexGuard<MutexRecursive> guard1(m_mutexInterf);
     MutexGuard<MutexRecursive> guard2(m_mutexUpdate);
 
-    Display::getInstance().on();
+    DisplayCommandQueue::getInstance().onSync();
 }
 
 bool DisplayMgr::isDisplayOn() const
@@ -1146,12 +1147,12 @@ void DisplayMgr::update()
      */
     if ((false == m_isDisplayEnabled) && (nullptr != m_selectedPlugin))
     {
-        display.on();
+        DisplayCommandQueue::getInstance().enqueueOn();
         m_isDisplayEnabled = true;
     }
 
-    /* Latch display buffer. */
-    display.show();
+    /* Latch display buffer via command queue for thread-safe access. */
+    DisplayCommandQueue::getInstance().enqueueShow();
 }
 
 void DisplayMgr::processTask(DisplayMgr* self)

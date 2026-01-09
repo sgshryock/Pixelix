@@ -47,6 +47,7 @@
 #include <stdint.h>
 #include <SimpleTimer.hpp>
 #include <IDisplay.hpp>
+#include <DisplayCommandQueue.h>
 #include <SensorChannelType.hpp>
 
 /******************************************************************************
@@ -236,13 +237,11 @@ public:
      * Apply the current brightness to the display.
      * This should be called from the display update task to ensure
      * thread-safe brightness changes without interfering with LED data output.
+     * Uses the display command queue for serialized access.
      */
     void applyBrightnessToDisplay()
     {
-        if (nullptr != m_display)
-        {
-            m_display->setBrightness(m_brightness);
-        }
+        DisplayCommandQueue::getInstance().enqueueBrightness(m_brightness);
     }
 
     /**
