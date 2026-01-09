@@ -9,7 +9,7 @@
         <link rel="stylesheet" type="text/css" href="/style/sticky-footer-navbar.css" />
         <link rel="stylesheet" type="text/css" href="/style/style.css" />
 
-        <title>PIXELIX</title>
+        <title>PIXELIX - Shryock Edition</title>
         <link rel="shortcut icon" type="image/png" href="/favicon.png" />
     </head>
     <body class="d-flex flex-column h-100">
@@ -31,210 +31,129 @@
 
         <!-- Begin page content -->
         <main role="main" class="flex-shrink-0">
-            <div class="container">
-                <h1 class="mt-5">Info</h1>
-                <h2>Software</h2>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">Description</th>
-                                <th scope="col">Result</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-light">
-                            <tr>
-                                <td>Version</td>
-                                <td>~SW_VERSION~</td>
-                            </tr>
-                            <tr>
-                                <td>Revision</td>
-                                <td>~SW_REVISION~</td>
-                            </tr>
-                            <tr>
-                                <td>Branch</td>
-                                <td>~SW_BRANCH~</td>
-                            </tr>
-                            <tr>
-                                <td>Target</td>
-                                <td>~TARGET~</td>
-                            </tr>
-                            <tr>
-                                <td>ESP SDK Version</td>
-                                <td>~ESP_SDK_VERSION~</td>
-                            </tr>
-                            <tr>
-                                <td>Arduino using IDF Branch</td>
-                                <td><a href="https://github.com/espressif/esp-idf/tree/~ARDUINO_IDF_BRANCH~">~ARDUINO_IDF_BRANCH~</a></td>
-                            </tr>
-                            <tr>
-                                <td>freeRTOS Version</td>
-                                <td>~FREERTOS_VERSION~</td>
-                            </tr>
-                            <tr>
-                                <td>LwIP Version</td>
-                                <td>~LWIP_VERSION~</td>
-                            </tr>
-                            <tr>
-                                <td>mbed TLS Version</td>
-                                <td><a href="https://github.com/espressif/mbedtls/tree/mbedtls-~MBED_TLS_VERSION~-idf">~MBED_TLS_VERSION~</a></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <h3>Heap</h3>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">Description</th>
-                                <th scope="col">Result</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-light">
-                            <tr>
-                                <td>Heap size</td>
-                                <td>~HEAP_SIZE~ byte</td>
-                            </tr>
-                            <tr>
-                                <td>Available Heap Size</td>
-                                <td id="availableHeapSize">~HEAP_SIZE_AVAILABLE~ byte</td>
-                            </tr>
-                            <tr>
-                                <td>Used Heap Size</td>
-                                <td id="usedHeapSize"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <canvas id="canvasChartHeap" width="240" height="240"></canvas>
-                <h3>PSRAM</h3>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">Description</th>
-                                <th scope="col">Result</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-light">
-                            <tr>
-                                <td>PSRAM size</td>
-                                <td>~PSRAM_SIZE~ byte</td>
-                            </tr>
-                            <tr>
-                                <td>Available PSRAM Size</td>
-                                <td id="availablePsramSize">~PSRAM_SIZE_AVAILABLE~ byte</td>
-                            </tr>
-                            <tr>
-                                <td>Used PSRAM Size</td>
-                                <td id="usedPsramSize"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <canvas id="canvasChartPsram" width="240" height="240"></canvas>
-                <h2>MCU</h2>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">Description</th>
-                                <th scope="col">Result</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-light">
-                            <tr>
-                                <td>MCU Type</td>
-                                <td>~ESP_TYPE~</td>
-                            </tr>
-                            <tr>
-                                <td>MCU Chip ID</td>
-                                <td>~ESP_CHIP_ID~</td>
-                            </tr>
-                            <tr>
-                                <td>MCU Chip Rev.</td>
-                                <td>~ESP_CHIP_REV~</td>
-                            </tr>
-                            <tr>
-                                <td>MCU Frequency</td>
-                                <td>~ESP_CPU_FREQ~ MHz</td>
-                            </tr>
-                            <tr>
-                                <td>Flash Chip Mode</td>
-                                <td>~FLASH_CHIP_MODE~</td>
-                            </tr>
-                            <tr>
-                                <td>Flash Chip Size</td>
-                                <td>~FLASH_CHIP_SIZE~ MByte</td>
-                            </tr>
-                            <tr>
-                                <td>Flash Chip Speed</td>
-                                <td>~FLASH_CHIP_SPEED~ MHz</td>
-                            </tr>
+            <div class="container-fluid px-4">
+                <h4 class="mb-3">System Information <span class="badge bg-info">Shryock Edition</span></h4>
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-lg-6">
+                        <!-- Software Card -->
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Software</div>
+                            <div class="card-body py-2">
+                                <table class="table table-sm table-borderless mb-0 small">
+                                    <tr><td class="text-muted">Version</td><td class="text-end">~SW_VERSION~</td></tr>
+                                    <tr><td class="text-muted">Revision</td><td class="text-end text-truncate" style="max-width:120px;" title="~SW_REVISION~">~SW_REVISION~</td></tr>
+                                    <tr><td class="text-muted">Branch</td><td class="text-end">~SW_BRANCH~</td></tr>
+                                    <tr><td class="text-muted">Target</td><td class="text-end">~TARGET~</td></tr>
+                                    <tr><td class="text-muted">ESP SDK</td><td class="text-end">~ESP_SDK_VERSION~</td></tr>
+                                    <tr><td class="text-muted">IDF Branch</td><td class="text-end"><a href="https://github.com/espressif/esp-idf/tree/~ARDUINO_IDF_BRANCH~">~ARDUINO_IDF_BRANCH~</a></td></tr>
+                                    <tr><td class="text-muted">FreeRTOS</td><td class="text-end">~FREERTOS_VERSION~</td></tr>
+                                    <tr><td class="text-muted">LwIP</td><td class="text-end">~LWIP_VERSION~</td></tr>
+                                    <tr><td class="text-muted">mbed TLS</td><td class="text-end"><a href="https://github.com/espressif/mbedtls/tree/mbedtls-~MBED_TLS_VERSION~-idf">~MBED_TLS_VERSION~</a></td></tr>
+                                </table>
+                            </div>
+                        </div>
 
-                        </tbody>
-                    </table>
+                        <!-- MCU Card -->
+                        <div class="card mb-3">
+                            <div class="card-header py-2">MCU</div>
+                            <div class="card-body py-2">
+                                <table class="table table-sm table-borderless mb-0 small">
+                                    <tr><td class="text-muted">Type</td><td class="text-end">~ESP_TYPE~</td></tr>
+                                    <tr><td class="text-muted">Chip ID</td><td class="text-end">~ESP_CHIP_ID~</td></tr>
+                                    <tr><td class="text-muted">Chip Rev</td><td class="text-end">~ESP_CHIP_REV~</td></tr>
+                                    <tr><td class="text-muted">CPU Freq</td><td class="text-end">~ESP_CPU_FREQ~ MHz</td></tr>
+                                    <tr><td class="text-muted">Flash Mode</td><td class="text-end">~FLASH_CHIP_MODE~</td></tr>
+                                    <tr><td class="text-muted">Flash Size</td><td class="text-end">~FLASH_CHIP_SIZE~ MB</td></tr>
+                                    <tr><td class="text-muted">Flash Speed</td><td class="text-end">~FLASH_CHIP_SPEED~ MHz</td></tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Network Card -->
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Network</div>
+                            <div class="card-body py-2">
+                                <table class="table table-sm table-borderless mb-0 small">
+                                    <tr><td class="text-muted">SSID</td><td class="text-end">~SSID~</td></tr>
+                                    <tr><td class="text-muted">RSSI</td><td class="text-end">~RSSI~ dBm</td></tr>
+                                    <tr><td class="text-muted">Hostname</td><td class="text-end">~HOSTNAME~</td></tr>
+                                    <tr><td class="text-muted">IPv4</td><td class="text-end">~IPV4~</td></tr>
+                                    <tr><td class="text-muted">MAC</td><td class="text-end" style="font-size:0.75rem;">~MAC_ADDR~</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Memory Charts -->
+                    <div class="col-lg-6">
+                        <!-- Heap Card -->
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between">
+                                <span>Heap Memory</span>
+                                <small class="text-muted" id="heapPercent"></small>
+                            </div>
+                            <div class="card-body py-3">
+                                <div class="row align-items-center">
+                                    <div class="col-5">
+                                        <canvas id="canvasChartHeap" width="120" height="120"></canvas>
+                                    </div>
+                                    <div class="col-7">
+                                        <table class="table table-sm table-borderless mb-0 small">
+                                            <tr><td class="text-muted">Total</td><td class="text-end">~HEAP_SIZE~ B</td></tr>
+                                            <tr><td class="text-success">Available</td><td class="text-end" id="availableHeapSize">~HEAP_SIZE_AVAILABLE~ B</td></tr>
+                                            <tr><td class="text-danger">Used</td><td class="text-end" id="usedHeapSize"></td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PSRAM Card -->
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between">
+                                <span>PSRAM</span>
+                                <small class="text-muted" id="psramPercent"></small>
+                            </div>
+                            <div class="card-body py-3">
+                                <div class="row align-items-center">
+                                    <div class="col-5">
+                                        <canvas id="canvasChartPsram" width="120" height="120"></canvas>
+                                    </div>
+                                    <div class="col-7">
+                                        <table class="table table-sm table-borderless mb-0 small">
+                                            <tr><td class="text-muted">Total</td><td class="text-end">~PSRAM_SIZE~ B</td></tr>
+                                            <tr><td class="text-success">Available</td><td class="text-end" id="availablePsramSize">~PSRAM_SIZE_AVAILABLE~ B</td></tr>
+                                            <tr><td class="text-danger">Used</td><td class="text-end" id="usedPsramSize"></td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filesystem Card -->
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between">
+                                <span>Filesystem</span>
+                                <small class="text-muted" id="fsPercent"></small>
+                            </div>
+                            <div class="card-body py-3">
+                                <div class="row align-items-center">
+                                    <div class="col-5">
+                                        <canvas id="canvasChartFs" width="120" height="120"></canvas>
+                                    </div>
+                                    <div class="col-7">
+                                        <table class="table table-sm table-borderless mb-0 small">
+                                            <tr><td class="text-muted">Total</td><td class="text-end">~FS_SIZE~ B</td></tr>
+                                            <tr><td class="text-success">Available</td><td class="text-end" id="availableFsSize"></td></tr>
+                                            <tr><td class="text-danger">Used</td><td class="text-end" id="usedFsSize">~FS_SIZE_USED~ B</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h2>Network</h2>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">Description</th>
-                                <th scope="col">Result</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-light">
-                            <tr>
-                                <td>SSID</td>
-                                <td>~SSID~</td>
-                            </tr>
-                            <tr>
-                                <td>RSSI</td>
-                                <td>~RSSI~ dBm</td>
-                            </tr>
-                            <tr>
-                                <td>Hostname</td>
-                                <td>~HOSTNAME~</td>
-                            </tr>
-                            <tr>
-                                <td>IPv4</td>
-                                <td>~IPV4~</td>
-                            </tr>
-                            <tr>
-                                <td>MAC</td>
-                                <td>~MAC_ADDR~</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <h2>Filesystem</h2>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">Description</th>
-                                <th scope="col">Result</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-light">
-                            <tr>
-                                <td>Filesystem Size</td>
-                                <td>~FS_SIZE~ byte</td>
-                            </tr>
-                            <tr>
-                                <td>Available Filesystem Size</td>
-                                <td id="availableFsSize"></td>
-                            </tr>
-                            <tr>
-                                <td>Used Filesystem Size</td>
-                                <td id="usedFsSize">~FS_SIZE_USED~ byte</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <canvas id="canvasChartFs" width="240" height="240"></canvas>
             </div>
         </main>
 
@@ -338,12 +257,11 @@
                     values: [100 - availablePsramSizeInPercent, availablePsramSizeInPercent],
                     colors: [window.chartColors.red, window.chartColors.green]
                 });
-                $("#availableHeapSize").css("background-color", window.chartColors.green);
-                $("#usedHeapSize").text("" + (heapSize - availableHeapSize) + " byte");
-                $("#usedHeapSize").css("background-color", window.chartColors.red);
-                $("#availablePsramSize").css("background-color", window.chartColors.green);
-                $("#usedPsramSize").text("" + (psramSize - availablePsramSize) + " byte");
-                $("#usedPsramSize").css("background-color", window.chartColors.red);
+                $("#usedHeapSize").text("" + (heapSize - availableHeapSize) + " B");
+                $("#heapPercent").text(availableHeapSizeInPercent + "% free");
+
+                $("#usedPsramSize").text("" + (psramSize - availablePsramSize) + " B");
+                $("#psramPercent").text(availablePsramSizeInPercent + "% free");
 
                 /* Draw the chart, showing the current situation on the filesystem. */
                 generatePieGraph("canvasChartFs", {
@@ -358,9 +276,8 @@
                     values: [100 - availableFsSizeInPercent, availableFsSizeInPercent],
                     colors: [window.chartColors.red, window.chartColors.green]
                 });
-                $("#availableFsSize").text("" + (filesystemSize - usedFilesystemSize) + " byte");
-                $("#availableFsSize").css("background-color", window.chartColors.green);
-                $("#usedFsSize").css("background-color", window.chartColors.red);
+                $("#availableFsSize").text("" + (filesystemSize - usedFilesystemSize) + " B");
+                $("#fsPercent").text(availableFsSizeInPercent + "% free");
             });
         </script>
     </body>
