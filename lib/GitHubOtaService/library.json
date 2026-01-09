@@ -1,0 +1,22 @@
+{
+    "name": "GitHubOtaService",
+    "version": "0.1.0",
+    "description": "GitHub OTA update service for checking and downloading firmware updates from GitHub releases",
+    "authors": [{
+        "name": "Shryock Edition"
+    }],
+    "license": "MIT",
+    "dependencies": [{
+        "name": "HttpService"
+    }, {
+        "name": "Logging"
+    }, {
+        "name": "Os"
+    }, {
+        "name": "Utilities"
+    }, {
+        "name": "Service"
+    }],
+    "frameworks": "*",
+    "platforms": "*"
+}
