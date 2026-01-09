@@ -478,8 +478,8 @@ private:
     /** The update task period in ms. */
     static const uint32_t UPDATE_TASK_PERIOD       = 20U;
 
-    /** The update task shall run on the MCU core with less load. */
-    static const BaseType_t UPDATE_TASK_RUN_CORE   = tskNO_AFFINITY;
+    /** The update task shall run on the APP MCU core to avoid WiFi interference with NeoPixel timing. */
+    static const BaseType_t UPDATE_TASK_RUN_CORE   = APP_CPU_NUM;
 
     /** The update task priority shall be higher than the other application tasks. */
     static const UBaseType_t UPDATE_TASK_PRIORITY  = 4U;
@@ -515,6 +515,7 @@ private:
     FadeEffectController m_fadeEffectController; /**< Fade effect controller. */
     bool                 m_isNetworkConnected;   /**< Is a network connection established? */
     IndicatorViewBase    m_indicatorView;        /**< Indicator view shown as overlay to indicate user defined states. */
+    bool                 m_isDisplayEnabled;     /**< Is display output enabled? Starts false, set true after first frame. */
 
 
 #if (0 != CONFIG_DISPLAY_MGR_ENABLE_STATISTICS)

@@ -233,6 +233,19 @@ public:
     }
 
     /**
+     * Apply the current brightness to the display.
+     * This should be called from the display update task to ensure
+     * thread-safe brightness changes without interfering with LED data output.
+     */
+    void applyBrightnessToDisplay()
+    {
+        if (nullptr != m_display)
+        {
+            m_display->setBrightness(m_brightness);
+        }
+    }
+
+    /**
      * IIR filter time constant in ms for calculating the short-term moving average
      * of the light samples. Used for low latency measurement.
      */

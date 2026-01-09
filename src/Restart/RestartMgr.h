@@ -102,6 +102,21 @@ public:
     }
 
     /**
+     * Is a shutdown requested?
+     * A shutdown will gracefully stop all services and enter deep sleep.
+     *
+     * @return If shutdown is requested, it will return true otherwise false.
+     */
+    bool isShutdownRequested()
+    {
+        bool isShutdownReq = m_isShutdownReq;
+
+        m_isShutdownReq    = false;
+
+        return isShutdownReq;
+    }
+
+    /**
      * Will active partition change after restart?
      * Active partition will change after a user initiates a change to the PixelixUpdater partition (factory) via the webinterface.
      *
@@ -127,13 +142,28 @@ public:
      */
     RestartReqStatus reqRestart(uint32_t delay, bool isPartitionChange);
 
+    /**
+     * Request a shutdown (deep sleep).
+     *
+     * @param[in] delay How long the shutdown shall be delayed in ms.
+     *
+     * @return Status
+     */
+    RestartReqStatus reqShutdown(uint32_t delay);
+
 private:
 
     /** Restart requested? */
     bool m_isRestartReq;
 
+    /** Shutdown (deep sleep) requested? */
+    bool m_isShutdownReq;
+
     /** Timer used to delay a restart request. */
     SimpleTimer m_timer;
+
+    /** Timer used to delay a shutdown request. */
+    SimpleTimer m_shutdownTimer;
 
     /** Partition change following after restart? */
     bool m_isPartitionChange;

@@ -98,6 +98,15 @@ void BrightnessCtrl::init(IDisplay& display, uint8_t minBrightnessHardLimit, uin
         setAmbientLight(m_recentShortTermAverage.getValue());
         updateBrightnessGoal();
     }
+
+    /* Apply initial brightness directly to display.
+     * This is safe because no display tasks are running yet at init time.
+     * Subsequent changes go through applyBrightnessToDisplay() called from update task.
+     */
+    if (nullptr != m_display)
+    {
+        m_display->setBrightness(m_brightness);
+    }
 }
 
 bool BrightnessCtrl::enable(bool state)
@@ -289,10 +298,9 @@ void BrightnessCtrl::setBrightness(uint8_t level)
             m_brightness = level;
         }
 
-        if (nullptr != m_display)
-        {
-            m_display->setBrightness(m_brightness);
-        }
+        /* Note: Brightness is applied to display via applyBrightnessToDisplay()
+         * called from the display update task to avoid race conditions with LED output.
+         */
     }
 }
 
@@ -385,11 +393,6 @@ void BrightnessCtrl::updateBrightness()
         {
             m_brightness += STEP;
         }
-
-        if (nullptr != m_display)
-        {
-            m_display->setBrightness(m_brightness);
-        }
     }
     else if (m_brightnessGoal < m_brightness)
     {
@@ -401,16 +404,15 @@ void BrightnessCtrl::updateBrightness()
         {
             m_brightness -= STEP;
         }
-
-        if (nullptr != m_display)
-        {
-            m_display->setBrightness(m_brightness);
-        }
     }
     else
     {
         ;
     }
+
+    /* Note: Brightness is applied to display via applyBrightnessToDisplay()
+     * called from the display update task to avoid race conditions with LED output.
+     */
 }
 
 /******************************************************************************

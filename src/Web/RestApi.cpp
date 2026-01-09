@@ -110,6 +110,7 @@ static void                         uploadHandler(AsyncWebServerRequest* request
 static void                         handleFileDelete(AsyncWebServerRequest* request);
 static bool                         isValidHostname(const String& hostname);
 static void                         handlePartitionChange(AsyncWebServerRequest* request);
+static void                         handleShutdown(AsyncWebServerRequest* request);
 static HomeAssistantDiscoveryStatus disableHomeAssistantAutomaticDiscovery();
 static void                         handleHomeAssistantAutomaticDiscoveryDisable(AsyncWebServerRequest* request);
 static HomeAssistantDiscoveryStatus getHomeAssistantAutomaticDiscoveryStatus();
@@ -195,6 +196,8 @@ void RestApi::init(AsyncWebServer& srv)
     (void)srv.on("/rest/api/v1/fs", handleFilesystem)
         .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
     (void)srv.on("/rest/api/v1/partitionChange", HTTP_POST, handlePartitionChange)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/shutdown", HTTP_POST, handleShutdown)
         .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
     (void)srv.on("/rest/api/v1/homeAssistant/automaticDiscovery/disable", HTTP_POST, handleHomeAssistantAutomaticDiscoveryDisable)
         .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
@@ -1978,6 +1981,48 @@ static void handlePartitionChange(AsyncWebServerRequest* request)
 
         default:
             break;
+        }
+    }
+
+    RestUtil::sendJsonRsp(request, jsonDoc, httpStatusCode);
+}
+
+/**
+ * Handle shutdown request.
+ * This will gracefully stop all services and enter deep sleep.
+ *
+ * @param[in] request   HTTP request
+ */
+static void handleShutdown(AsyncWebServerRequest* request)
+{
+    uint32_t            httpStatusCode = HttpStatus::STATUS_CODE_OK;
+    const size_t        JSON_DOC_SIZE  = 512U;
+    DynamicJsonDocument jsonDoc(JSON_DOC_SIZE);
+    const uint32_t      SHUTDOWN_DELAY = 100U; /* ms */
+
+    if (nullptr == request)
+    {
+        return;
+    }
+
+    if (HTTP_POST != request->method())
+    {
+        RestUtil::prepareRspErrorHttpMethodNotSupported(jsonDoc);
+        httpStatusCode = HttpStatus::STATUS_CODE_NOT_FOUND;
+    }
+    else
+    {
+        RestartMgr&                  restartMgr = RestartMgr::getInstance();
+        RestartMgr::RestartReqStatus status     = restartMgr.reqShutdown(SHUTDOWN_DELAY);
+
+        if (RestartMgr::RESTART_REQ_STATUS_OK == status)
+        {
+            (void)RestUtil::prepareRspSuccess(jsonDoc);
+        }
+        else
+        {
+            RestUtil::prepareRspError(jsonDoc, "Shutdown request failed!");
+            httpStatusCode = HttpStatus::STATUS_CODE_INTERNAL_SERVER_ERROR;
         }
     }
 

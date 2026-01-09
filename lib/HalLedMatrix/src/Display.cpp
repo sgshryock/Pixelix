@@ -72,7 +72,7 @@ Display::Display() :
     m_strip(Board::LedMatrix::width * Board::LedMatrix::height, Board::Pin::ledMatrixDataOutPinNo),
     m_topo(Board::LedMatrix::width, Board::LedMatrix::height),
     m_ledMatrix(),
-    m_isOn(true)
+    m_isOn(false)  /* Start off - will be turned on after first frame is ready */
 {
 }
 

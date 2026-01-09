@@ -73,6 +73,14 @@ void RestartMgr::process()
         m_isRestartReq = true;
         m_timer.stop();
     }
+
+    /* Delayed shutdown request? */
+    if ((true == m_shutdownTimer.isTimerRunning()) &&
+        (true == m_shutdownTimer.isTimeout()))
+    {
+        m_isShutdownReq = true;
+        m_shutdownTimer.stop();
+    }
 }
 
 RestartMgr::RestartReqStatus RestartMgr::reqRestart(uint32_t delay, bool isPartitionChange)
@@ -108,6 +116,22 @@ RestartMgr::RestartReqStatus RestartMgr::reqRestart(uint32_t delay, bool isParti
     return status;
 }
 
+RestartMgr::RestartReqStatus RestartMgr::reqShutdown(uint32_t delay)
+{
+    RestartReqStatus status = RESTART_REQ_STATUS_OK;
+
+    if (0U == delay)
+    {
+        m_isShutdownReq = true;
+    }
+    else
+    {
+        m_shutdownTimer.start(delay);
+    }
+
+    return status;
+}
+
 /******************************************************************************
  * Protected Methods
  *****************************************************************************/
@@ -118,7 +142,9 @@ RestartMgr::RestartReqStatus RestartMgr::reqRestart(uint32_t delay, bool isParti
 
 RestartMgr::RestartMgr() :
     m_isRestartReq(false),
+    m_isShutdownReq(false),
     m_timer(),
+    m_shutdownTimer(),
     m_isPartitionChange(false)
 {
 }

@@ -87,7 +87,8 @@ public:
     bool begin() final
     {
         m_strip.Begin();
-        m_strip.Show();
+        m_strip.ClearTo(ColorDef::BLACK);  /* Clear strip buffer to avoid garbage on first show */
+        /* Don't show yet - display starts off and will be turned on after first frame is ready */
 
         return true;
     }

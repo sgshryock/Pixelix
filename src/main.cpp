@@ -42,6 +42,7 @@
 #include <esp_task_wdt.h>
 #include "InitState.h"
 #include "RestartState.h"
+#include "ShutdownState.h"
 #include "ErrorState.h"
 #include "MemMon.h"
 #include "MiniTerminal.h"
@@ -256,8 +257,15 @@ void loop()
         gSysStateMachine.setState(RestartState::getInstance());
     }
 
-    /* Handle button actions only if not in RestartState and not in ErrorState. */
+    /* Shutdown requested by restart manager? */
+    if (true == restartMgr.isShutdownRequested())
+    {
+        gSysStateMachine.setState(ShutdownState::getInstance());
+    }
+
+    /* Handle button actions only if not in RestartState, ShutdownState, or ErrorState. */
     if (&RestartState::getInstance() != gSysStateMachine.getState() &&
+        &ShutdownState::getInstance() != gSysStateMachine.getState() &&
         &ErrorState::getInstance() != gSysStateMachine.getState())
     {
         gButtonHandler.process();

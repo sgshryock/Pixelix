@@ -137,6 +137,20 @@ bool DisplayMgr::begin()
         isError = true;
     }
 
+    /* Clear framebuffers and display to black before starting tasks.
+     * This prevents displaying uninitialized memory during boot.
+     */
+    if (false == isError)
+    {
+        IDisplay& display = Display::getInstance();
+
+        m_doubleFrameBuffer.getSelectedFramebuffer().fillScreen(ColorDef::BLACK);
+        m_doubleFrameBuffer.selectNextFramebuffer();
+        m_doubleFrameBuffer.getSelectedFramebuffer().fillScreen(ColorDef::BLACK);
+        display.clear();
+        display.show();
+    }
+
     /* Process task not started yet? */
     if ((false == isError) &&
         (false == m_processTask.isRunning()))
@@ -215,6 +229,8 @@ void DisplayMgr::end()
 
     m_doubleFrameBuffer.release();
     m_slotList.destroy();
+
+    m_isDisplayEnabled = false;
 
     LOG_INFO("DisplayMgr is down.");
 }
@@ -785,7 +801,8 @@ DisplayMgr::DisplayMgr() :
     m_doubleFrameBuffer(),
     m_fadeEffectController(m_doubleFrameBuffer),
     m_isNetworkConnected(false),
-    m_indicatorView()
+    m_indicatorView(),
+    m_isDisplayEnabled(false)
 
 #if (0 != CONFIG_DISPLAY_MGR_ENABLE_STATISTICS)
     ,
@@ -1043,8 +1060,8 @@ void DisplayMgr::process()
     /* If no plugin is selected, choose the next one. */
     if (nullptr == m_selectedPlugin)
     {
-        YAGfxDynamicBitmap&        selectedFrameBuffer = m_doubleFrameBuffer.getSelectedFramebuffer();
         MutexGuard<MutexRecursive> guard(m_mutexUpdate);
+        YAGfxDynamicBitmap&        selectedFrameBuffer = m_doubleFrameBuffer.getSelectedFramebuffer();
 
         /* Plugin requested to choose? */
         if (nullptr != m_requestedPlugin)
@@ -1084,7 +1101,9 @@ void DisplayMgr::process()
         else
         {
             selectedFrameBuffer.fillScreen(ColorDef::BLACK);
-            display.clear();
+            /* Note: Don't call display.clear() here - it would race with the update task.
+             * The framebuffer is already cleared, and update() will copy it to the display.
+             */
         }
     }
 
@@ -1118,6 +1137,18 @@ void DisplayMgr::update()
 
     /* Update the display buffer. */
     m_fadeEffectController.update(display);
+
+    /* Apply brightness changes safely before LED output to avoid race conditions. */
+    BrightnessCtrl::getInstance().applyBrightnessToDisplay();
+
+    /* Enable display output after first frame with content is ready.
+     * This prevents showing garbage/uninitialized data during boot.
+     */
+    if ((false == m_isDisplayEnabled) && (nullptr != m_selectedPlugin))
+    {
+        display.on();
+        m_isDisplayEnabled = true;
+    }
 
     /* Latch display buffer. */
     display.show();
