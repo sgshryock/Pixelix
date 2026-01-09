@@ -1,5 +1,6 @@
-main > .container {
-    padding: 60px 15px 0;
+main > .container,
+main > .container-fluid {
+    padding: 70px 15px 0;
 }
 
 .header {
@@ -92,10 +93,289 @@ p.dragableSlot {
     border-top-right-radius: 10px;
 }
 
-#editor { 
+#editor {
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
+}
+
+/* ============================================
+   Modern Display Page Styles
+   ============================================ */
+
+/* Canvas with glow effect */
+.display-canvas {
+    border: 2px solid #0d6efd;
+    box-shadow: 0 0 20px rgba(13, 110, 253, 0.4);
+    border-radius: 0.5rem;
+    background-color: black;
+}
+
+/* Slot grid layout - fixed 2-column grid */
+.slot-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+/* Visual plugin card */
+.slot-card {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    position: relative;
+}
+
+.slot-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.slot-card.is-locked::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--bs-danger);
+}
+
+.slot-card.is-sticky::after {
+    content: 'S';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--bs-warning);
+    color: #000;
+    font-size: 0.65rem;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.slot-card.is-disabled {
+    opacity: 0.5;
+}
+
+/* Plugin image */
+.slot-card-image {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    background: #1a1a1a;
+    display: block;
+}
+
+.slot-card-image-placeholder {
+    width: 100%;
+    height: 80px;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bs-secondary);
+    font-size: 1.5rem;
+}
+
+/* Card info section */
+.slot-card-info {
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.slot-card-name {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.slot-card-slot {
+    font-size: 0.65rem;
+    color: var(--bs-secondary);
+}
+
+/* Expanded card controls */
+.slot-card-controls {
+    display: none;
+    padding: 0.5rem;
+    background: var(--bs-body-bg);
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.slot-card.expanded .slot-card-controls {
+    display: block;
+}
+
+/* Draggable styling */
+.slot-card[draggable="true"] {
+    cursor: grab;
+}
+
+.slot-card[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.slot-card.dragging {
+    opacity: 0.4;
+    transform: scale(0.95);
+}
+
+/* Uninstall drop zone */
+.uninstall-zone {
+    border: 2px dashed var(--bs-danger);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    color: var(--bs-danger);
+    opacity: 0.5;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+}
+
+.uninstall-zone:hover,
+.uninstall-zone.drag-over {
+    opacity: 1;
+    background-color: rgba(var(--bs-danger-rgb), 0.15);
+    border-style: solid;
+}
+
+/* Add plugin card */
+.add-plugin-card {
+    border: 2px dashed var(--bs-border-color);
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--bs-secondary);
+}
+
+.add-plugin-card:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.add-plugin-card .icon {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Side panel */
+.side-panel {
+    position: sticky;
+    top: 80px;
+}
+
+@media (max-width: 767.98px) {
+    .side-panel {
+        position: static;
+        margin-top: 1rem;
+    }
+}
+
+/* Compact brightness controls */
+.brightness-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.brightness-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 150px;
+}
+
+.brightness-item label {
+    white-space: nowrap;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+}
+
+.brightness-item input[type="range"] {
+    flex: 1;
+    min-width: 80px;
+}
+
+.brightness-value {
+    min-width: 50px;
+    text-align: right;
+    font-size: 0.875rem;
+    color: var(--bs-primary);
+}
+
+/* Control toolbar */
+.control-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+/* ============================================
+   Settings Page Styles
+   ============================================ */
+
+/* Settings grid layout - 2 columns */
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+@media (max-width: 991.98px) {
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Setting card */
+.setting-card {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.setting-card:hover {
+    border-color: var(--bs-primary);
+}
+
+.setting-card:focus-within {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+
+.setting-card-body {
+    padding: 0.75rem;
+}
+
+.setting-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    margin-bottom: 0.5rem;
+}
+
+/* Textarea settings span full width */
+.setting-card:has(textarea) {
+    grid-column: 1 / -1;
 }

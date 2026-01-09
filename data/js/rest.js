@@ -314,3 +314,11 @@ pixelix.rest.Client.prototype.setDisplayState = function(state) {
 
     return promise;
 };
+
+pixelix.rest.Client.prototype.getStatus = function() {
+    return utils.makeRequest({
+        method: "GET",
+        url: "/rest/api/v1/status",
+        isJsonResponse: true
+    });
+};

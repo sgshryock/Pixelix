@@ -45,70 +45,114 @@
                     </div>
                 </div>
             </div>
-            <!-- Main view -->
-            <div class="container">
-                <h1 class="mt-5">Display</h1>
-                <p>Slot: <span id="slotId">-</span></p>
-                <canvas id="canvas" width="353" height="89" style="border: 1px solid #000000; background-color: black;"></canvas>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3 mt-2">
-                    <form>
-                        <div class="form-group mb-3">
-                            <button id="displayPowerButton" class="btn btn-light" type="button" onclick="triggerDisplayState()" value="off" disabled>Power Off</button>
-                            <button id="updateDisplayButton" class="btn btn-light" type="button" onclick="updateDisplay()" value="false" disabled>Enable auto. display update</button>
-                            <button class="btn btn-light" type="button" onclick="prevSlot()" disabled>Previous slot</button>
-                            <button class="btn btn-light" type="button" onclick="nextSlot()" disabled>Next slot</button>
+            <!-- Main view - two column layout -->
+            <div class="container-fluid mt-5 px-4">
+                <div class="row">
+                    <!-- Main content - Plugins -->
+                    <div class="col-lg-9 col-md-8">
+                        <!-- Display Canvas -->
+                        <div class="text-center mb-4">
+                            <div class="position-relative d-inline-block">
+                                <canvas id="canvas" class="display-canvas" width="353" height="89"></canvas>
+                                <span class="position-absolute top-0 end-0 badge bg-secondary m-2">Slot: <span id="slotId">-</span></span>
+                            </div>
                         </div>
-                    </form>
-                </div>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3 mt-2">
-                    <form>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="bNextEffect">Currently active fade effect: <span id="lableFadeEffect" class="text-primary"> Linear</span></label>
-                            <button class="btn btn-light" id="bNextEffect" type="button" onclick="nextEffect()" disabled>Next fade effect</button>
+
+                        <!-- Plugins Grid -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Plugins</h5>
+                                <small class="text-muted">Click to edit, drag to reorder</small>
+                            </div>
+                            <div id="divSlots" class="slot-grid">
+                            </div>
                         </div>
-                    </form>
-                </div>
-                <p>Note, you can move the plugins with drag'n drop to other slots.</p>
-                <div id="divSlots">
-                </div>
-                <p style="clear: both;"><br /></p>
-                <ul>
-                    <li>Red shaded: Slot is locked and plugin can not be removed.</li>
-                    <li>Yellow shaded: Slot is sticky. Slot scheduling is stopped.</li>
-                    <li>Red/Yellow shaded: Slot is sticky and locked.</li>
-                </ul>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3 mt-2">
-                    <form>
-                        <div class="form-group mb-3">
-                            <select class="form-select" id="pluginToInstall" size="1">
-                            </select>
-                            <br />
-                            <button class="btn btn-light" type="button" onclick="install()" disabled>Install</button>
+
+                        <!-- Uninstall Zone -->
+                        <div id="uninstallZone" class="uninstall-zone mb-3" ondragover="allowDrop(event)" ondrop="drop(event)">
+                            Drop here to uninstall
                         </div>
-                    </form>
-                </div>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3 mt-2">
-                    <form>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="bAutoBrightnessCtrl">Automatic brightness control: <span id="autoBrightnessStatus" class="text-primary">?</span></label>
-                            <button class="btn btn-light" id="bAutoBrightnessCtrl" type="button" value="false" onclick="triggerAutoBrightnessCtrl();changeBrightness();" disabled>Enable</button>
+                    </div>
+
+                    <!-- Side Panel - Controls -->
+                    <div class="col-lg-3 col-md-4">
+                        <div class="side-panel">
+                            <!-- Display Controls -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2">Display</div>
+                                <div class="card-body py-2">
+                                    <div class="d-grid gap-2">
+                                        <button id="displayPowerButton" class="btn btn-outline-light btn-sm" type="button" onclick="triggerDisplayState()" value="off" disabled>
+                                            Power Off
+                                        </button>
+                                        <button id="updateDisplayButton" class="btn btn-outline-light btn-sm" type="button" onclick="updateDisplay()" value="false" disabled>
+                                            Auto Update
+                                        </button>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-light" type="button" onclick="prevSlot()" disabled>Prev</button>
+                                            <button class="btn btn-outline-light" type="button" onclick="nextSlot()" disabled>Next</button>
+                                        </div>
+                                        <button class="btn btn-outline-light btn-sm" id="bNextEffect" type="button" onclick="nextEffect()" disabled>
+                                            Effect: <span id="lableFadeEffect" class="text-primary">Linear</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Brightness -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                    <span>Brightness</span>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" id="autoBrightnessSwitch" onchange="toggleAutoBrightness()" disabled>
+                                        <label class="form-check-label small" for="autoBrightnessSwitch">Auto</label>
+                                    </div>
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between small">
+                                            <label for="currentBrightness">Current</label>
+                                            <span id="currentBrightnessValue">?</span>
+                                        </div>
+                                        <input type="range" class="form-range" id="currentBrightness" min="0" max="255" onchange="changeBrightness();" oninput="$('#currentBrightnessValue').text(calcPercentage(this.value) + '%')" disabled />
+                                    </div>
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between small">
+                                            <label for="minBrightness">Min</label>
+                                            <span id="minBrightnessValue">?</span>
+                                        </div>
+                                        <input type="range" class="form-range" id="minBrightness" min="0" max="255" onchange="changeBrightness();" oninput="$('#minBrightnessValue').text(calcPercentage(this.value) + '%')" disabled />
+                                    </div>
+                                    <div>
+                                        <div class="d-flex justify-content-between small">
+                                            <label for="maxBrightness">Max</label>
+                                            <span id="maxBrightnessValue">?</span>
+                                        </div>
+                                        <input type="range" class="form-range" id="maxBrightness" min="0" max="255" onchange="changeBrightness();" oninput="$('#maxBrightnessValue').text(calcPercentage(this.value) + '%')" disabled />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add Plugin -->
+                            <div class="card mb-3">
+                                <div class="card-header py-2">Add Plugin</div>
+                                <div class="card-body py-2">
+                                    <select class="form-select form-select-sm mb-2" id="pluginToInstall" size="1">
+                                    </select>
+                                    <button class="btn btn-primary btn-sm w-100" type="button" onclick="install()" disabled>Install</button>
+                                </div>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="card">
+                                <div class="card-body py-2 small">
+                                    <div><span class="text-danger">Red</span> = Locked</div>
+                                    <div><span class="text-warning">S badge</span> = Sticky</div>
+                                    <div class="text-muted">Faded = Disabled</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="currentBrightness">Current Brightness:</label>
-                            <div class="text-primary" id="currentBrightnessValue">?</div>
-                            <input type="range" class="form-range" id="currentBrightness" min="0" max="255" onchange="changeBrightness();" oninput="$('#currentBrightnessValue').text(calcPercentage(this.value) + ' %')" disabled />
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="minBrightness">Min. brightness soft limit:</label>
-                            <div class="text-primary" id="minBrightnessValue">?</div>
-                            <input type="range" class="form-range" id="minBrightness" min="0" max="255" onchange="changeBrightness();" oninput="$('#minBrightnessValue').text(calcPercentage(this.value) + ' %')" disabled />
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="maxBrightness">Max. brightness soft limit:</label>
-                            <div class="text-primary" id="maxBrightnessValue">?</div>
-                            <input type="range" class="form-range" id="maxBrightness" min="0" max="255" onchange="changeBrightness();" oninput="$('#maxBrightnessValue').text(calcPercentage(this.value) + ' %')" disabled />
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </main>
@@ -167,7 +211,7 @@
 
             /* Enable all UI elements. */
             function enableUI() {
-                var automaticBrightnessControl = $("#bAutoBrightnessCtrl").val() === "true";
+                var automaticBrightnessControl = $("#autoBrightnessSwitch").prop("checked");
 
                 $("main :button").prop("disabled", false);
                 $("main :input").prop("disabled", false);
@@ -428,30 +472,37 @@
             }
 
             function drag(ev) {
-                $("#" + ev.target.id).css("opacity", "0.4");
-                ev.dataTransfer.setData("src", ev.target.id);
+                var $card = $(ev.target).closest(".slot-card");
+                $card.addClass("dragging");
+                var slotId = $card.data("slot");
+                var uid = $card.data("uid");
+                ev.dataTransfer.setData("slotId", slotId);
+                ev.dataTransfer.setData("uid", uid);
             }
 
             function onDragEnd(ev) {
-                $("#" + ev.target.id).removeAttr("style");
+                $(ev.target).closest(".slot-card").removeClass("dragging");
             }
 
             function drop(ev) {
                 ev.preventDefault();
 
-                var data = ev.dataTransfer.getData("src");
-                var src = document.getElementById(data);
-                var srcParent = src.parentNode;
-                var dst = ev.currentTarget.lastElementChild;
-                var dstParent = dst.parentNode;
+                var srcSlotId = parseInt(ev.dataTransfer.getData("slotId"));
+                var srcUid = parseInt(ev.dataTransfer.getData("uid"));
+                var target = ev.currentTarget;
 
-                if ("uninstall" == dstParent.id) {
-                    uninstall(parseInt(srcParent.id));
-                } else if (src.id != dst.id) {
-                    ev.currentTarget.replaceChild(src, dst);
-                    srcParent.appendChild(dst);
+                // Check if dropping on uninstall zone
+                if ("uninstallZone" === target.id) {
+                    uninstall(srcSlotId);
+                } else {
+                    // Dropping on another slot card
+                    var $targetCard = $(target).closest(".slot-card");
+                    var targetSlotId = $targetCard.data("slot");
 
-                    move(parseInt(data), parseInt(dstParent.id));
+                    if (srcSlotId !== targetSlotId) {
+                        // Move plugin UID to target slot
+                        move(srcUid, targetSlotId);
+                    }
                 }
             }
 
@@ -489,218 +540,153 @@
                 });
             }
 
+            function getPluginImagePath(pluginName) {
+                // Try to get plugin image - most are .jpg, some are .png
+                return "/plugins/" + pluginName + "/" + pluginName + ".jpg";
+            }
+
+            function toggleCardExpand(cardId) {
+                var $card = $("#" + cardId).closest(".slot-card");
+                $card.toggleClass("expanded");
+            }
+
             function updateSlotInfo() {
                 return wsClient.getSlots().then(function(rsp) {
                     var index = 0;
-                    var row = null;
-                    var cell = null;
-
                     var $divSlots = $("#divSlots");
-                    var $divSlot = null;
-                    var $header = null;
-                    var $spanAlias = null;
-                    var $inputAlias = null;
-                    var $inputGroupAlias = null;
-                    var $divDuration = null;
-                    var $inputDuration = null;
-                    var $buttonSlotStatus = null;
-                    var $buttonStickyFlag = null;
-                    var $divDuration = null;
-                    var $durationUnit = null;
-                    var $dragableSlot = null;
-                    var dragableSlotId = "";
-                    var pluginName = "";
-                    var pluginUid = "";
-                    var pluginAlias = "";
-                    var inputAliasDisabled = false;
 
                     $divSlots.empty();
+
                     for(index = 0; index < rsp.slots.length; ++index) {
-                        $divSlot = $("<div>");
+                        var slot = rsp.slots[index];
 
-                        if (false === rsp.slots[index].isLocked) {
-
-                            if (false === rsp.slots[index].isSticky) {
-                                $divSlot.attr("class", "divSlot");
-                            } else {
-                                $divSlot.attr("class", "divSlot sticky");
-                            }
-
-                            $divSlot.attr("ondragover", "allowDrop(event)");
-                            $divSlot.attr("ondrop", "drop(event)");
-                        } else {
-
-                            if (false === rsp.slots[index].isSticky) {
-                                $divSlot.attr("class", "divSlot locked");
-                            } else {
-                                $divSlot.attr("class", "divSlot lockedAndSticky");
-                            }
+                        // Skip empty slots
+                        if (0 === slot.name.length) {
+                            continue;
                         }
 
-                        $divSlot.attr("id", index);
+                        var pluginName = slot.name;
+                        var pluginUid = slot.uid;
+                        var pluginAlias = (0 < slot.alias.length) ? slot.alias : "";
+                        var displayName = pluginAlias.length > 0 ? pluginAlias : pluginName.replace("Plugin", "");
 
-                        $header = $("<header>");
-                        $header.append("Slot " + index + "<br />");
+                        // Build card classes
+                        var cardClasses = "slot-card";
+                        if (slot.isLocked) cardClasses += " is-locked";
+                        if (slot.isSticky) cardClasses += " is-sticky";
+                        if (slot.isDisabled) cardClasses += " is-disabled";
 
-                        $inputDuration = $("<input>")
-                            .attr("class", "form-control")
-                            .attr("id", "duration" + index)
-                            .attr("type", "number")
-                            .attr("value", rsp.slots[index].duration / 1000)
-                            .attr("min", "1")
-                            .attr("max", "3600")
-                            .attr("onchange", "setDuration(" + index + ")");
-                        
-                        $durationUnit = $("<span>")
-                            .attr("class", "input-group-text")
-                            .append("[s]");
+                        // Create slot card
+                        var $card = $("<div>")
+                            .attr("class", cardClasses)
+                            .attr("id", "slot-" + index)
+                            .attr("data-slot", index)
+                            .attr("data-uid", pluginUid);
 
-                        $buttonStickyFlag = $("<button>")
-                            .attr("class", "btn btn-dark")
-                            .attr("id", "sticky" + index)
-                            .attr("onclick", "handleStickySlot(" + index + ")")
-                            .attr("data-toggle", "tooltip")
-                            .attr("data-placement", "top")
-                            .attr("title", "If the sticky flag is set, the slot scheduler will be disabled and the slot with the sticky flag will be shown.")
-                            .text((false === rsp.slots[index].isSticky) ? "-" : "S");
-
-                        $buttonSlotStatus = $("<button>")
-                            .attr("class", "btn btn-dark")
-                            .attr("id", "slotStatus" + index)
-                            .attr("type", "button")
-                            .attr("onclick", "handleSlotStatus(" + index + ")")
-                            .attr("data-toggle", "tooltip")
-                            .attr("data-placement", "top")
-                            .attr("title", "Every enabled slot will be shown during slot scheduling, except there is a sticky slot. Disabled slots are skipped by the slot scheduler.")
-                            .text((false === rsp.slots[index].isDisabled) ? "✓" : "-");
-
-                        $divDuration = $("<div>")
-                            .attr("class", "input-group")
-                            .append($inputDuration)
-                            .append($durationUnit)
-                            .append($buttonStickyFlag)
-                            .append($buttonSlotStatus);
-
-                        $header.append($divDuration);
-
-                        $divSlot.append($header);
-
-                        $dragableSlot = $("<p>")
-                            .attr("class", "dragableSlot");
-
-                        if ((false == rsp.slots[index].isLocked) &&
-                            (0 < rsp.slots[index].name.length)) {
-                            $dragableSlot.attr("draggable", "true");
-                            $dragableSlot.attr("ondragstart", "drag(event)");
-                            $dragableSlot.attr("ondragend", "onDragEnd(event)");
+                        // Make draggable if not locked
+                        if (!slot.isLocked) {
+                            $card.attr("draggable", "true");
+                            $card.attr("ondragstart", "drag(event)");
+                            $card.attr("ondragend", "onDragEnd(event)");
+                            $card.attr("ondragover", "allowDrop(event)");
+                            $card.attr("ondrop", "drop(event)");
                         }
 
-                        if (0 == rsp.slots[index].name.length) {
-                            dragableSlotId = "A" + index;
-                            inputAliasId = "aliasA" + index;
-                            pluginName = "-";
-                            pluginUid = "-";
-                            pluginAlias = "-";
+                        // Plugin image
+                        var $img = $("<img>")
+                            .attr("class", "slot-card-image")
+                            .attr("src", getPluginImagePath(pluginName))
+                            .attr("alt", pluginName)
+                            .attr("onerror", "this.style.display='none'; this.nextElementSibling.style.display='flex';");
 
-                        } else {
-                            dragableSlotId = rsp.slots[index].uid;
-                            inputAliasId = "alias" + rsp.slots[index].uid;
-                            pluginName = rsp.slots[index].name;
-                            pluginUid = rsp.slots[index].uid;
-                            pluginAlias = "-";
+                        var $imgPlaceholder = $("<div>")
+                            .attr("class", "slot-card-image-placeholder")
+                            .attr("style", "display:none;")
+                            .text(pluginName.charAt(0));
 
-                            if (0 === rsp.slots[index].alias.length) {
-                                pluginAlias = "";
-                            } else {
-                                pluginAlias = rsp.slots[index].alias;
-                            }
-                        }
+                        $card.append($img);
+                        $card.append($imgPlaceholder);
 
-                        $dragableSlot.attr("id", dragableSlotId);
+                        // Card info
+                        var $info = $("<div>")
+                            .attr("class", "slot-card-info")
+                            .attr("onclick", "toggleCardExpand('slot-" + index + "')");
 
-                        $spanAlias = $("<span>")
-                            .attr("class", "input-group-text")
-                            .append("Alias:");
+                        $info.append($("<div>").attr("class", "slot-card-name").text(displayName));
+                        $info.append($("<div>").attr("class", "slot-card-slot").text("Slot " + index));
 
-                        if (0 == rsp.slots[index].name.length) {
-                            $inputAlias = $("<span>")
-                                .attr("class", "input-group-text")
-                                .attr("style", "width: 8em;")
-                                .append(pluginAlias)
+                        $card.append($info);
 
-                        } else {
-                            $inputAlias = $("<input>")
-                                .attr("class", "form-control")
-                                .attr("id", inputAliasId)
+                        // Expandable controls
+                        var $controls = $("<div>").attr("class", "slot-card-controls");
+
+                        // Duration
+                        var $durationGroup = $("<div>").attr("class", "input-group input-group-sm mb-2");
+                        $durationGroup.append($("<span>").attr("class", "input-group-text").text("Time"));
+                        $durationGroup.append(
+                            $("<input>")
+                                .attr("class", "form-control form-control-sm")
+                                .attr("id", "duration" + index)
+                                .attr("type", "number")
+                                .attr("value", slot.duration / 1000)
+                                .attr("min", "1")
+                                .attr("max", "3600")
+                                .attr("onchange", "setDuration(" + index + ")")
+                        );
+                        $durationGroup.append($("<span>").attr("class", "input-group-text").text("s"));
+                        $controls.append($durationGroup);
+
+                        // Alias
+                        var $aliasGroup = $("<div>").attr("class", "input-group input-group-sm mb-2");
+                        $aliasGroup.append($("<span>").attr("class", "input-group-text").text("Alias"));
+                        $aliasGroup.append(
+                            $("<input>")
+                                .attr("class", "form-control form-control-sm")
+                                .attr("id", "alias" + pluginUid)
                                 .attr("type", "text")
                                 .attr("value", pluginAlias)
-                                .attr("size", "8")
-                                .attr("minlength", "0")
+                                .attr("placeholder", "Name")
                                 .attr("maxlength", "8")
-                                .attr("onchange", "setAlias(" + pluginUid + ")");
-                        }
+                                .attr("onchange", "setAlias(" + pluginUid + ")")
+                        );
+                        $controls.append($aliasGroup);
 
-                        $inputGroupAlias = $("<div>")
-                            .attr("class", "input-group")
-                            .append($spanAlias)
-                            .append($inputAlias);
-                        
-                        var $divCol11 = $("<div>")
-                            .attr("class", "col")
-                            .append(pluginName);
-                        var $divCol21 = $("<div>")
-                            .attr("class", "col")
-                            .append("UID: " + pluginUid);
-                        var $divCol31 = $("<div>")
-                            .attr("class", "col")
-                            .append($inputGroupAlias);
+                        // Buttons
+                        var $btnGroup = $("<div>").attr("class", "d-flex gap-1");
+                        $btnGroup.append(
+                            $("<button>")
+                                .attr("class", "btn btn-outline-secondary btn-sm flex-fill")
+                                .attr("id", "sticky" + index)
+                                .attr("onclick", "handleStickySlot(" + index + ")")
+                                .text(slot.isSticky ? "Unsticky" : "Sticky")
+                        );
+                        $btnGroup.append(
+                            $("<button>")
+                                .attr("class", "btn btn-outline-secondary btn-sm flex-fill")
+                                .attr("id", "slotStatus" + index)
+                                .attr("onclick", "handleSlotStatus(" + index + ")")
+                                .text(slot.isDisabled ? "Enable" : "Disable")
+                        );
+                        $controls.append($btnGroup);
 
-                        var $divRow1 = $("<div>")
-                            .attr("class", "row")
-                            .append($divCol11);
-                        var $divRow2 = $("<div>")
-                            .attr("class", "row")
-                            .append($divCol21);
-                        var $divRow3 = $("<div>")
-                            .attr("class", "row")
-                            .append($divCol31);
-
-                        var $divContainer = $("<div>")
-                            .attr("class", "container text-center")
-                            .append($divRow1)
-                            .append($divRow2)
-                            .append($divRow3);
-
-                        $dragableSlot.append($divContainer);
-
-                        $divSlot.append($dragableSlot);
-                        $divSlots.append($divSlot);
+                        $card.append($controls);
+                        $divSlots.append($card);
                     }
 
-                    $divSlot = $("<div>")
-                        .attr("class", "divSlot")
-                        .attr("ondragover", "allowDrop(event)")
-                        .attr("ondrop", "drop(event)")
-                        .attr("id", "uninstall");
-
-                    $header = $("<header>")
-                        .text("Uninstall");
-
-                    $divSlot.append($header);
-
-                    var $divUninstall = $("<p>")
-                        .attr("class", "dragableSlot")
-                        .text("Drop the plugin here to uninstall it.");
-
-                        $divSlot.append($divUninstall);
-
-                    $divSlots.append($divSlot);
+                    // Show message if no plugins installed
+                    if ($divSlots.children().length === 0) {
+                        $divSlots.append(
+                            $("<div>")
+                                .attr("class", "text-center text-muted py-4")
+                                .html("<p>No plugins installed</p><p class='small'>Use the Add Plugin panel to install plugins</p>")
+                        );
+                    }
                 });
             }
 
             function handleSlotStatus(slotId) {
                 var statusStr = $("#slotStatus" + slotId).text();
-                var isDisabled = ("✓" === statusStr) ? true : false;
+                var isDisabled = (statusStr === "Enable") ? false : true;
 
                 disableUI();
                 
@@ -721,7 +707,7 @@
 
             function handleStickySlot(slotId) {
                 var stickyStr = $("#sticky" + slotId).text();
-                var sticky = ("-" === stickyStr) ? true : false;
+                var sticky = (stickyStr === "Sticky") ? true : false;
 
                 disableUI();
                 
@@ -764,37 +750,23 @@
 
             function updateAutoBrightnessCtrl(autoBrightnessCtrl) {
                 if (false === autoBrightnessCtrl) {
-                    $("#autoBrightnessStatus").text("Disabled");
-                    $("#bAutoBrightnessCtrl").text("Enable");
-                    $("#bAutoBrightnessCtrl").val("false");
+                    $("#autoBrightnessSwitch").prop("checked", false);
                     $("#currentBrightness").prop("disabled", false);
                 } else {
-                    $("#autoBrightnessStatus").text("Enabled");
-                    $("#bAutoBrightnessCtrl").text("Disable");
-                    $("#bAutoBrightnessCtrl").val("true");
+                    $("#autoBrightnessSwitch").prop("checked", true);
                     $("#currentBrightness").prop("disabled", true);
                 }
             }
 
-            function triggerAutoBrightnessCtrl() {
-                var autoBrightnessCtrl = $("#bAutoBrightnessCtrl").val() === "true";
-
-                if (false === autoBrightnessCtrl) {
-                    $("#autoBrightnessStatus").text("Enabled");
-                    $("#bAutoBrightnessCtrl").text("Disable");
-                    $("#bAutoBrightnessCtrl").val("true");
-                } else {
-                    $("#autoBrightnessStatus").text("Disabled");
-                    $("#bAutoBrightnessCtrl").text("Enable");
-                    $("#bAutoBrightnessCtrl").val("false");
-                }
+            function toggleAutoBrightness() {
+                changeBrightness();
             }
 
             function changeBrightness() {
                 var currentBrightness = parseInt($("#currentBrightness").val());
                 var minBrightness = parseInt($("#minBrightness").val());
                 var maxBrightness = parseInt($("#maxBrightness").val());
-                var autoBrightnessCtrl = $("#bAutoBrightnessCtrl").val() === "true";
+                var autoBrightnessCtrl = $("#autoBrightnessSwitch").prop("checked");
 
                 disableUI();
                 wsClient.setBrightness({
