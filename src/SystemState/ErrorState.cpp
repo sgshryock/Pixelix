@@ -42,6 +42,7 @@
 #include <Logging.h>
 #include <Util.h>
 #include <Display.h>
+#include <DisplayCommandQueue.h>
 #include <YAFont.h>
 #include <TomThumb.h>
 #include <Board.h>
@@ -108,16 +109,14 @@ void ErrorState::entry(StateMachine& sm)
         }
         else
         {
-            const uint8_t   BRIGHTNESS_HALF = 128U; /* 50%*/
-            YAFont          font(&TomThumb);
-            int16_t         cursorX = 0;
-            int16_t         cursorY = display.getHeight() - 1;
-            YAGfxSolidBrush brush(ColorDef::RED);
-            String          errorIdStr;
-            uint8_t         idx = 0U;
-
-            /* Set 50% brightness. */
-            display.setBrightness(BRIGHTNESS_HALF);
+            DisplayCommandQueue&    displayQueue    = DisplayCommandQueue::getInstance();
+            const uint8_t           BRIGHTNESS_HALF = 128U; /* 50%*/
+            YAFont                  font(&TomThumb);
+            int16_t                 cursorX = 0;
+            int16_t                 cursorY = display.getHeight() - 1;
+            YAGfxSolidBrush         brush(ColorDef::RED);
+            String                  errorIdStr;
+            uint8_t                 idx = 0U;
 
             errorIdStr = m_errorId;
 
@@ -130,7 +129,27 @@ void ErrorState::entry(StateMachine& sm)
                 font.drawChar(display, cursorX, cursorY, errorIdStr.c_str()[idx], brush);
             }
 
-            display.show();
+            /* Use sync API if queue is running, otherwise fallback to direct access.
+             * This handles errors that occur before the queue is initialized.
+             */
+            if (true == displayQueue.isRunning())
+            {
+                displayQueue.setBrightnessSync(BRIGHTNESS_HALF);
+                displayQueue.showSync();
+            }
+            else
+            {
+                /* Direct access fallback for early-stage errors. */
+                display.setBrightness(BRIGHTNESS_HALF);
+                display.show();
+
+                /* Wait until the LED matrix is updated. */
+                while (false == display.isReady())
+                {
+                    /* Just wait ... */
+                    ;
+                }
+            }
         }
     }
     else

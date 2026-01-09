@@ -45,6 +45,7 @@
 
 #include <Board.h>
 #include <Display.h>
+#include <DisplayCommandQueue.h>
 #include <Logging.h>
 #include <Util.h>
 #include <ESPmDNS.h>
@@ -85,7 +86,8 @@ void RestartState::entry(StateMachine& sm)
 
 void RestartState::process(StateMachine& sm)
 {
-    Display& display = Display::getInstance();
+    DisplayCommandQueue& displayQueue = DisplayCommandQueue::getInstance();
+    IDisplay&            display      = displayQueue.getDisplay();
 
     UTIL_NOT_USED(sm);
 
@@ -115,8 +117,8 @@ void RestartState::process(StateMachine& sm)
 
         if (false == RestartMgr::getInstance().isPartitionChange())
         {
-            /* Clear display */
-            display.clear();
+            /* Clear display using sync API. */
+            displayQueue.clearSync();
         }
         else
         {
@@ -129,14 +131,8 @@ void RestartState::process(StateMachine& sm)
             textWidget.update(display);
         }
 
-        display.show();
-
-        /* Wait until the LED matrix is updated. */
-        while (false == display.isReady())
-        {
-            /* Just wait ... */
-            ;
-        }
+        /* Show the display contents using sync API. */
+        displayQueue.showSync();
 
         Topics::end();
 

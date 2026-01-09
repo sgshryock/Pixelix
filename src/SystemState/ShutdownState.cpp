@@ -44,6 +44,7 @@
 
 #include <Board.h>
 #include <Display.h>
+#include <DisplayCommandQueue.h>
 #include <Logging.h>
 #include <Util.h>
 #include <ESPmDNS.h>
@@ -85,7 +86,7 @@ void ShutdownState::entry(StateMachine& sm)
 
 void ShutdownState::process(StateMachine& sm)
 {
-    Display& display = Display::getInstance();
+    DisplayCommandQueue& displayQueue = DisplayCommandQueue::getInstance();
 
     UTIL_NOT_USED(sm);
 
@@ -113,16 +114,9 @@ void ShutdownState::process(StateMachine& sm)
          */
         DisplayMgr::getInstance().end();
 
-        /* Clear display for shutdown */
-        display.clear();
-        display.show();
-
-        /* Wait until the LED matrix is updated. */
-        while (false == display.isReady())
-        {
-            /* Just wait ... */
-            ;
-        }
+        /* Clear display for shutdown using sync API. */
+        displayQueue.clearSync();
+        displayQueue.showSync();
 
         Topics::end();
 

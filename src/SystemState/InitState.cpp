@@ -39,6 +39,7 @@
 #include <WiFi.h>
 #include <Board.h>
 #include <Display.h>
+#include <DisplayCommandQueue.h>
 #include <SensorDataProvider.h>
 #include <Wire.h>
 #include <IconTextPlugin.h>
@@ -191,6 +192,13 @@ void InitState::entry(StateMachine& sm)
     {
         LOG_FATAL("Failed to initialize display.");
         /* To set a error id here, makes no sense, because it can not be shown. */
+        isError = true;
+    }
+    /* Start display command queue for thread-safe display access */
+    else if (false == DisplayCommandQueue::getInstance().begin())
+    {
+        LOG_FATAL("Failed to initialize display command queue.");
+        errorId = ErrorState::ERROR_ID_DISP_MGR;
         isError = true;
     }
     /* Initialize display manager */
