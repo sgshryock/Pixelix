@@ -51,6 +51,7 @@
 #include <Logging.h>
 #include <SensorDataProvider.h>
 #include <SettingsService.h>
+#include <GitHubOtaService.h>
 #include "RestartMgr.h"
 
 /******************************************************************************
@@ -116,6 +117,10 @@ static void                         handleHomeAssistantAutomaticDiscoveryDisable
 static HomeAssistantDiscoveryStatus getHomeAssistantAutomaticDiscoveryStatus();
 static void                         handleHomeAssistantAutomaticDiscoveryStatus(AsyncWebServerRequest* request);
 static bool                         isPathSafe(const String& path);
+static void                         handleOtaCheck(AsyncWebServerRequest* request);
+static void                         handleOtaStatus(AsyncWebServerRequest* request);
+static void                         handleOtaUpdate(AsyncWebServerRequest* request);
+static void                         handleOtaAbort(AsyncWebServerRequest* request);
 
 /******************************************************************************
  * Local Variables
@@ -200,6 +205,16 @@ void RestApi::init(AsyncWebServer& srv)
     (void)srv.on("/rest/api/v1/shutdown", HTTP_POST, handleShutdown)
         .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
     (void)srv.on("/rest/api/v1/homeAssistant/automaticDiscovery/disable", HTTP_POST, handleHomeAssistantAutomaticDiscoveryDisable)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+
+    /* OTA Update endpoints */
+    (void)srv.on("/rest/api/v1/ota/check", HTTP_POST, handleOtaCheck)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/ota/status", HTTP_GET, handleOtaStatus)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/ota/update", HTTP_POST, handleOtaUpdate)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/ota/abort", HTTP_POST, handleOtaAbort)
         .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
 }
 
@@ -2231,4 +2246,210 @@ static bool isPathSafe(const String& path)
     }
 
     return true;
+}
+
+/**
+ * Handle OTA update check request.
+ * Starts checking for updates from configured GitHub repository.
+ *
+ * @param[in] request   HTTP request
+ */
+static void handleOtaCheck(AsyncWebServerRequest* request)
+{
+    uint32_t            httpStatusCode = HttpStatus::STATUS_CODE_OK;
+    const size_t        JSON_DOC_SIZE  = 512U;
+    DynamicJsonDocument jsonDoc(JSON_DOC_SIZE);
+
+    if (nullptr == request)
+    {
+        return;
+    }
+
+    if (HTTP_POST != request->method())
+    {
+        RestUtil::prepareRspErrorHttpMethodNotSupported(jsonDoc);
+        httpStatusCode = HttpStatus::STATUS_CODE_NOT_FOUND;
+    }
+    else
+    {
+        SettingsService& settings = SettingsService::getInstance();
+        String           repoUrl;
+
+        if (true == settings.open(true))
+        {
+            repoUrl = settings.getGithubRepoUrl().getValue();
+            settings.close();
+        }
+
+        if (repoUrl.isEmpty())
+        {
+            RestUtil::prepareRspError(jsonDoc, "GitHub repository URL not configured.");
+            httpStatusCode = HttpStatus::STATUS_CODE_BAD_REQUEST;
+        }
+        else if (false == GitHubOtaService::getInstance().checkForUpdates(repoUrl))
+        {
+            RestUtil::prepareRspError(jsonDoc, "Update check already in progress.");
+            httpStatusCode = HttpStatus::STATUS_CODE_CONFLICT;
+        }
+        else
+        {
+            (void)RestUtil::prepareRspSuccess(jsonDoc);
+        }
+    }
+
+    RestUtil::sendJsonRsp(request, jsonDoc, httpStatusCode);
+}
+
+/**
+ * Handle OTA status request.
+ * Returns current version info, OTA state, and release info if available.
+ *
+ * @param[in] request   HTTP request
+ */
+static void handleOtaStatus(AsyncWebServerRequest* request)
+{
+    uint32_t            httpStatusCode = HttpStatus::STATUS_CODE_OK;
+    const size_t        JSON_DOC_SIZE  = 2048U;
+    DynamicJsonDocument jsonDoc(JSON_DOC_SIZE);
+
+    if (nullptr == request)
+    {
+        return;
+    }
+
+    if (HTTP_GET != request->method())
+    {
+        RestUtil::prepareRspErrorHttpMethodNotSupported(jsonDoc);
+        httpStatusCode = HttpStatus::STATUS_CODE_NOT_FOUND;
+    }
+    else
+    {
+        GitHubOtaService& otaService = GitHubOtaService::getInstance();
+        JsonObject        dataObj    = RestUtil::prepareRspSuccess(jsonDoc);
+
+        /* Current version info */
+        dataObj["currentVersion"] = Version::getSoftwareVersion();
+        dataObj["targetName"]     = Version::getTargetName();
+
+        /* OTA state */
+        OtaState    state    = otaService.getState();
+        const char* stateStr = "idle";
+        switch (state)
+        {
+        case OtaState::IDLE:
+            stateStr = "idle";
+            break;
+        case OtaState::CHECKING_RELEASE:
+            stateStr = "checking";
+            break;
+        case OtaState::RELEASE_INFO_READY:
+            stateStr = "ready";
+            break;
+        case OtaState::DOWNLOADING:
+            stateStr = "downloading";
+            break;
+        case OtaState::DOWNLOAD_COMPLETE:
+            stateStr = "complete";
+            break;
+        case OtaState::ERROR:
+            stateStr = "error";
+            break;
+        default:
+            break;
+        }
+        dataObj["state"] = stateStr;
+
+        /* Progress (0-100) */
+        dataObj["progress"] = otaService.getDownloadProgress();
+
+        /* Error message if any */
+        if (OtaState::ERROR == state)
+        {
+            dataObj["error"] = otaService.getErrorMessage();
+        }
+
+        /* Release info if available */
+        if ((OtaState::RELEASE_INFO_READY == state) ||
+            (OtaState::DOWNLOADING == state) ||
+            (OtaState::DOWNLOAD_COMPLETE == state))
+        {
+            const ReleaseInfo& info    = otaService.getReleaseInfo();
+            JsonObject         release = dataObj.createNestedObject("release");
+            release["version"]         = info.tagName;
+            release["notes"]           = info.releaseNotes;
+            release["hasMatchingBinary"] = info.hasMatchingBinary;
+            release["firmwareSize"]    = info.firmwareSize;
+        }
+    }
+
+    RestUtil::sendJsonRsp(request, jsonDoc, httpStatusCode);
+}
+
+/**
+ * Handle OTA update start request.
+ * Starts downloading and flashing the firmware.
+ *
+ * @param[in] request   HTTP request
+ */
+static void handleOtaUpdate(AsyncWebServerRequest* request)
+{
+    uint32_t            httpStatusCode = HttpStatus::STATUS_CODE_OK;
+    const size_t        JSON_DOC_SIZE  = 512U;
+    DynamicJsonDocument jsonDoc(JSON_DOC_SIZE);
+
+    if (nullptr == request)
+    {
+        return;
+    }
+
+    if (HTTP_POST != request->method())
+    {
+        RestUtil::prepareRspErrorHttpMethodNotSupported(jsonDoc);
+        httpStatusCode = HttpStatus::STATUS_CODE_NOT_FOUND;
+    }
+    else
+    {
+        if (false == GitHubOtaService::getInstance().startOtaUpdate())
+        {
+            RestUtil::prepareRspError(jsonDoc, "Cannot start update. Check status endpoint.");
+            httpStatusCode = HttpStatus::STATUS_CODE_BAD_REQUEST;
+        }
+        else
+        {
+            (void)RestUtil::prepareRspSuccess(jsonDoc);
+        }
+    }
+
+    RestUtil::sendJsonRsp(request, jsonDoc, httpStatusCode);
+}
+
+/**
+ * Handle OTA abort request.
+ * Aborts any ongoing OTA operation.
+ *
+ * @param[in] request   HTTP request
+ */
+static void handleOtaAbort(AsyncWebServerRequest* request)
+{
+    uint32_t            httpStatusCode = HttpStatus::STATUS_CODE_OK;
+    const size_t        JSON_DOC_SIZE  = 512U;
+    DynamicJsonDocument jsonDoc(JSON_DOC_SIZE);
+
+    if (nullptr == request)
+    {
+        return;
+    }
+
+    if (HTTP_POST != request->method())
+    {
+        RestUtil::prepareRspErrorHttpMethodNotSupported(jsonDoc);
+        httpStatusCode = HttpStatus::STATUS_CODE_NOT_FOUND;
+    }
+    else
+    {
+        GitHubOtaService::getInstance().abort();
+        (void)RestUtil::prepareRspSuccess(jsonDoc);
+    }
+
+    RestUtil::sendJsonRsp(request, jsonDoc, httpStatusCode);
 }
