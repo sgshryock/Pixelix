@@ -49,7 +49,7 @@
             <div class="container">
                 <h1 class="mt-5">Settings</h1>
                 <p>Setting changes need a restart to take effect.</p>
-                <p><button class="btn btn-light" type="button" onclick="restart();" disabled>Restart</button></p>
+                <p><button class="btn btn-light" type="button" onclick="restart();" disabled>Restart</button> <button class="btn btn-light" type="button" onclick="shutdown();" disabled>Shutdown</button></p>
                 <p id="settings"></p>
             </div>
         </main>
@@ -96,6 +96,16 @@
 
                 restClient.restart().then(function(rsp) {
                     return dialog.showInfo("<p>Ok.</p>");
+                }).catch(function(err) {
+                    return dialog.showError("<p>Error: " + err + "</p>");
+                });
+            }
+
+            function shutdown() {
+                disableUI();
+
+                restClient.shutdown().then(function(rsp) {
+                    return dialog.showInfo("<p>Shutting down. Press reset button to wake up.</p>");
                 }).catch(function(err) {
                     return dialog.showError("<p>Error: " + err + "</p>");
                 });

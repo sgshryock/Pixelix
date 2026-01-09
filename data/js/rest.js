@@ -237,6 +237,14 @@ pixelix.rest.Client.prototype.restart = function() {
     });
 };
 
+pixelix.rest.Client.prototype.shutdown = function() {
+    return utils.makeRequest({
+        method: "POST",
+        url: "/rest/api/v1/shutdown",
+        isJsonResponse: true
+    });
+};
+
 pixelix.rest.Client.prototype.fileMgrUploadFile = function(file, fileSize) {
     var promise = null;
 
