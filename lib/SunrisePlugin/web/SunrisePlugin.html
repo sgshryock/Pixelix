@@ -31,59 +31,68 @@
 
         <!-- Begin page content -->
         <main role="main" class="flex-shrink-0">
-            <div class="container">
-                <h1 class="mt-5">SunrisePlugin</h1>
-                <p><img src="SunrisePlugin.jpg" alt="Screenshot" /></p>
-                <p>The plugin shows the current sunrise / sunset times for a configured location.</p>
-                <p>Configure the time format you like.</p>
-                <p>The format is according to <a href="https://cplusplus.com/reference/ctime/strftime/" target="_blank">strftime()</a>. For colorization text properties can be added.</p>
-                <ul>
-                    <li>%b - Abbreviated month name (3 characters)</li>
-                    <li>%d - Day of the month, zero-padded (01-31)</li>
-                    <li>%m - Month as a decimal number (01-12)</li>
-                    <li>%H - Hour in 24h format (00-23)</li>
-                    <li>%I - Hour in 12h format (01-12)</li>
-                    <li>%M - Minute (00-59)</li>
-                    <li>%p - AM or PM designation</li>
-                    <li>%Y - Year</li>
-                </ul>
-                <h2>Configuration</h2>
-                <h3>Location</h3>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3">
-                    <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="pluginUid">Plugin UID:</label>
-                            <select class="form-select" id="pluginUid" size="1" onChange="getConfig(pluginUid.options[pluginUid.selectedIndex].value)">
-                            </select>    
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="latitude">Latitude:</label>
-                            <input class="form-control" type="text" id="latitude" name="latitude" value="0" />    
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="longitude">Longitude:</label>
-                            <input class="form-control" type="text" id="longitude" name="longitude" value="0" />    
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="timeFormat">Time format:</label>
-                            <div class="input-group">
-                                <input class="form-control" type="text" id="timeFormat" name="timeFormat" value="" />
-                                <select class="form-select" id="predefinedTimeFormat" onchange="document.getElementById('timeFormat').value = this.value;">
-                                    <option value="">Choose preset...</option>
-                                    <option value="%H:%M">24h (HH:MM)</option>
-                                    <option value="%I:%M %p">12h (HH:MM AM/PM)</option>
-                                    <option value="%H:%M:%S">24h with seconds (HH:MM:SS)</option>
-                                    <option value="%I:%M:%S %p">12h with seconds (HH:MM:SS AM/PM)</option>
-                                </select>
+            <div class="container-fluid px-4">
+                <div class="row">
+                    <!-- Left column - Plugin info -->
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <span>SunrisePlugin</span>
+                                <span class="badge bg-info">Weather</span>
                             </div>
-                            <small class="form-text">The time format string defines how the time is shown.</small>
+                            <div class="card-body py-2">
+                                <img src="SunrisePlugin.jpg" alt="Screenshot" class="img-fluid rounded mb-2" />
+                                <p class="small mb-1">Shows current sunrise/sunset times for a configured location.</p>
+                                <p class="small mb-1">Format is according to <a href="https://cplusplus.com/reference/ctime/strftime/" target="_blank">strftime()</a>.</p>
+                                <p class="small mb-0">Common format codes: %H (24h hour), %I (12h hour), %M (minute), %p (AM/PM)</p>
+                            </div>
                         </div>
-                        <input name="submit" type="submit" value="Update"/>
-                    </form>
+                    </div>
+                    <!-- Right column - Configuration -->
+                    <div class="col-lg-8">
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Configuration</div>
+                            <div class="card-body py-2">
+                                <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="pluginUid">Plugin UID</label>
+                                            <select class="form-select form-select-sm" id="pluginUid" onChange="getConfig(pluginUid.options[pluginUid.selectedIndex].value)">
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="latitude">Latitude</label>
+                                            <input class="form-control form-control-sm" type="text" id="latitude" name="latitude" value="0" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="longitude">Longitude</label>
+                                            <input class="form-control form-control-sm" type="text" id="longitude" name="longitude" value="0" />
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="timeFormat">Time Format</label>
+                                            <div class="input-group input-group-sm">
+                                                <input class="form-control form-control-sm" type="text" id="timeFormat" name="timeFormat" value="" />
+                                                <select class="form-select form-select-sm" id="predefinedTimeFormat" onchange="document.getElementById('timeFormat').value = this.value;">
+                                                    <option value="">Preset...</option>
+                                                    <option value="%H:%M">24h (HH:MM)</option>
+                                                    <option value="%I:%M %p">12h (HH:MM AM/PM)</option>
+                                                    <option value="%H:%M:%S">24h with seconds</option>
+                                                    <option value="%I:%M:%S %p">12h with seconds</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
-  
+
         <!-- Footer -->
         <footer class="footer mt-auto py-3">
             <div class="container">
@@ -109,15 +118,15 @@
 
             var pluginName  = "SunrisePlugin";
             var restClient  = new pixelix.rest.Client();
-    
+
             function enableUI() {
                 utils.enableForm("myForm", true);
             }
-    
+
             function disableUI() {
                 utils.enableForm("myForm", false);
             }
-    
+
             function getPluginInstances() {
                 return restClient.getPluginInstances().then(function(rsp) {
                     var slotIndex   = 0;
@@ -130,7 +139,7 @@
 
                             optionText = rsp.data.slots[slotIndex].uid;
                             optionText += " (";
-                            
+
                             if (0 === rsp.data.slots[slotIndex].alias.length) {
                                 optionText += "-"
                             } else {
@@ -142,7 +151,7 @@
                             $option = $("<option>")
                                         .attr("value", "" + rsp.data.slots[slotIndex].uid)
                                         .text(optionText);
-                            
+
                             $("#pluginUid").append($option);
 
                             ++cnt;
@@ -155,7 +164,7 @@
                     return Promise.resolve(0);
                 });
             };
-    
+
             function getConfig(pluginUid) {
                 disableUI();
                 return utils.makeRequest({
@@ -200,7 +209,7 @@
 
                 /* Disable all forms, until the plugin instances are loaded. */
                 disableUI();
-    
+
                 /* Load all plugin instances. */
                 getPluginInstances().then(function(cnt) {
                     var select = document.getElementById("pluginUid");

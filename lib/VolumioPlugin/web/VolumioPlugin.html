@@ -31,30 +31,48 @@
 
         <!-- Begin page content -->
         <main role="main" class="flex-shrink-0">
-            <div class="container">
-                <h1 class="mt-5">VolumioPlugin</h1>
-                <p><img src="VolumioPlugin.jpg" alt="Screenshot" /></p>
-                <p>The plugin shows the current <a href="https://volumio.com/" target="_blank">VOLUMIO</a> state as icon and the played artist/title.</p>
-                <p>If the VOLUMIO server is offline, the plugin gets automatically disabled, otherwise enabled.</p>
-                <h2>Configuration</h2>
-                <h3>Host Address</h3>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3">
-                    <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="pluginUid">Plugin UID:</label>
-                            <select class="form-select" id="pluginUid" size="1" onChange="getConfig(pluginUid.options[pluginUid.selectedIndex].value)">
-                            </select>    
+            <div class="container-fluid px-4">
+                <div class="row">
+                    <!-- Left column - Plugin info -->
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <span>VolumioPlugin</span>
+                                <span class="badge bg-success">Media</span>
+                            </div>
+                            <div class="card-body py-2">
+                                <img src="VolumioPlugin.jpg" alt="Screenshot" class="img-fluid rounded mb-2" />
+                                <p class="small mb-1">Shows current <a href="https://volumio.com/" target="_blank">VOLUMIO</a> state as icon and played artist/title.</p>
+                                <p class="small mb-0">Plugin auto-disables when VOLUMIO server is offline.</p>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="host">Host address of server:</label>
-                            <input class="form-control" type="text" id="host" name="host" value="volumio.fritz.box" />    
-                        </div>                    
-                        <input name="submit" type="submit" value="Update"/>
-                    </form>
+                    </div>
+                    <!-- Right column - Configuration -->
+                    <div class="col-lg-8">
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Configuration</div>
+                            <div class="card-body py-2">
+                                <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="pluginUid">Plugin UID</label>
+                                            <select class="form-select form-select-sm" id="pluginUid" onChange="getConfig(pluginUid.options[pluginUid.selectedIndex].value)">
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="host">Host Address</label>
+                                            <input class="form-control form-control-sm" type="text" id="host" name="host" value="volumio.fritz.box" />
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
-  
+
         <!-- Footer -->
         <footer class="footer mt-auto py-3">
             <div class="container">
@@ -80,15 +98,15 @@
 
             var pluginName  = "VolumioPlugin";
             var restClient  = new pixelix.rest.Client();
-    
+
             function enableUI() {
                 utils.enableForm("myForm", true);
             }
-    
+
             function disableUI() {
                 utils.enableForm("myForm", false);
             }
-    
+
             function getPluginInstances() {
                 return restClient.getPluginInstances().then(function(rsp) {
                     var slotIndex   = 0;
@@ -101,7 +119,7 @@
 
                             optionText = rsp.data.slots[slotIndex].uid;
                             optionText += " (";
-                            
+
                             if (0 === rsp.data.slots[slotIndex].alias.length) {
                                 optionText += "-"
                             } else {
@@ -113,7 +131,7 @@
                             $option = $("<option>")
                                         .attr("value", "" + rsp.data.slots[slotIndex].uid)
                                         .text(optionText);
-                            
+
                             $("#pluginUid").append($option);
 
                             ++cnt;
@@ -126,7 +144,7 @@
                     return Promise.resolve(0);
                 });
             };
-    
+
             function getConfig(pluginUid) {
                 disableUI();
                 return utils.makeRequest({
@@ -167,7 +185,7 @@
 
                 /* Disable all forms, until the plugin instances are loaded. */
                 disableUI();
-    
+
                 /* Load all plugin instances. */
                 getPluginInstances().then(function(cnt) {
                     var select = document.getElementById("pluginUid");

@@ -31,24 +31,42 @@
 
         <!-- Begin page content -->
         <main role="main" class="flex-shrink-0">
-            <div class="container">
-                <h1 class="mt-5">MqttService</h1>
-                <p>The MQTT service allows to configure and manage MQTT broker connections.</p>
-                <p>
-                    <div class="alert alert-warning" role="alert">
-                        <strong>Important:</strong> The primary MQTT broker connection publishes configuration data for plugins, sensors and services. Make sure that its not a security risk to publish this data to the configured broker.
+            <div class="container-fluid px-4">
+                <div class="row">
+                    <!-- Left column - Service info -->
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <span>MqttService</span>
+                                <span class="badge bg-primary">Service</span>
+                            </div>
+                            <div class="card-body py-2">
+                                <p class="small mb-1">Configure and manage MQTT broker connections.</p>
+                                <div class="alert alert-warning small py-1 px-2 mb-2" role="alert">
+                                    <strong>Important:</strong> Primary broker publishes plugin, sensor, and service config data.
+                                </div>
+                                <p class="small mb-1"><strong>Notes:</strong></p>
+                                <ul class="small mb-0">
+                                    <li>First broker is primary connection</li>
+                                    <li>Plugin/sensor/service topics use primary</li>
+                                    <li>Additional brokers for dedicated plugins</li>
+                                    <li>TLS applies root CA, client cert and key</li>
+                                    <li>TLS without root CA is insecure</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                </p>
-                <p>Notes:</p>
-                <ul>
-                    <li>The first configured broker is used as primary connection.</li>
-                    <li>Plugin topics, sensor topics and service topics are managed by the primary connection.</li>
-                    <li>Additional brokers can be used for dedicated plugins.</li>
-                    <li>If TLS is enabled, the root CA certificate, client certificate and the client key are applied.</li>
-                    <li>If TLS is enabled, but no root CA certificate is provided, the connection will be insecure.</li>
-                </ul>
-                <form id="myForm" action="javascript:save()">
-                </form>
+                    <!-- Right column - Configuration -->
+                    <div class="col-lg-8">
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Configuration</div>
+                            <div class="card-body py-2">
+                                <form id="myForm" action="javascript:save()">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -87,13 +105,13 @@
             }
 
             function createFormGroup(elements) {
-                var $formGroup = $("<div class='form-group'></div>");
+                var $formGroup = $("<div class='mb-2'></div>");
                 var idx;
 
                 for (idx = 0; idx < elements.length; ++idx) {
                     $formGroup.append(elements[idx]);
                 }
-                
+
                 return $formGroup;
             }
 
@@ -104,7 +122,7 @@
                 for (idx = 0; idx < elements.length; ++idx) {
                     $formGroup.append(elements[idx]);
                 }
-                
+
                 return $formGroup;
             }
 
@@ -115,7 +133,7 @@
                 for (idx = 0; idx < elements.length; ++idx) {
                     $formGroup.append(elements[idx]);
                 }
-                
+
                 return $formGroup;
             }
 
@@ -126,53 +144,53 @@
                 for (idx = 0; idx < elements.length; ++idx) {
                     $formGroup.append(elements[idx]);
                 }
-                
+
                 return $formGroup;
             }
 
             function createMqttSetting(id, mqttSetting) {
-                var $block = $("<div class='h-100 p-2 bg-body-tertiary border rounded-3 mt-2'></div>");
+                var $block = $("<div class='border rounded p-2 mb-2'></div>");
                 var $row0 = $("<div class='row'></div>")
                 var $row1 = $("<div class='row'></div>")
                 var $row2 = $("<div class='row'></div>")
                 var $row3 = $("<div class='row'></div>")
                 var $row4 = $("<div class='row'></div>")
-                
+
                 var $checkboxEnabled = $("<input type='checkbox' class='form-check-input' id='" + id + "Enabled' />")
                                         .prop("checked", mqttSetting.enabled);
-                var $labelEnabled = $("<label class='form-check-label' for='" + id + "Enabled'>Enabled</label>");
+                var $labelEnabled = $("<label class='form-check-label small' for='" + id + "Enabled'>Enabled</label>");
 
                 var $useTls = $("<input type='checkbox' class='form-check-input' id='" + id + "UseTls' />")
                                         .prop("checked", mqttSetting.useTls);
-                var $labelUseTls = $("<label class='form-check-label' for='" + id + "UseTls'>Use TLS</label>");
+                var $labelUseTls = $("<label class='form-check-label small' for='" + id + "UseTls'>Use TLS</label>");
 
-                var $broker = $("<input type='text' class='form-control' id='" + id + "Broker' />")
+                var $broker = $("<input type='text' class='form-control form-control-sm' id='" + id + "Broker' />")
                                         .val(mqttSetting.broker);
-                var $labelBroker = $("<label for='" + id + "Broker'>Broker hostname, e.g. mqtt.example.com</label>");
+                var $labelBroker = $("<label class='form-label small' for='" + id + "Broker'>Broker hostname</label>");
 
-                var $port = $("<input type='number' class='form-control' id='" + id + "Port' />")
+                var $port = $("<input type='number' class='form-control form-control-sm' id='" + id + "Port' />")
                                         .val(mqttSetting.port);
-                var $labelPort = $("<label for='" + id + "Port'>Port</label>");
+                var $labelPort = $("<label class='form-label small' for='" + id + "Port'>Port</label>");
 
-                var $user = $("<input type='text' class='form-control' id='" + id + "User' />")
+                var $user = $("<input type='text' class='form-control form-control-sm' id='" + id + "User' />")
                                         .val(mqttSetting.user);
-                var $labelUser = $("<label for='" + id + "User'>User</label>");
+                var $labelUser = $("<label class='form-label small' for='" + id + "User'>User</label>");
 
-                var $password = $("<input type='password' class='form-control' id='" + id + "Password' />")
+                var $password = $("<input type='password' class='form-control form-control-sm' id='" + id + "Password' />")
                                         .val(mqttSetting.password);
-                var $labelPassword = $("<label for='" + id + "Password'>Password</label>");
+                var $labelPassword = $("<label class='form-label small' for='" + id + "Password'>Password</label>");
 
-                var $rootCaCert = $("<textarea class='form-control' id='" + id + "RootCaCert' rows='4'></textarea>")
+                var $rootCaCert = $("<textarea class='form-control form-control-sm' id='" + id + "RootCaCert' rows='3'></textarea>")
                                         .val(mqttSetting.rootCaCert);
-                var $labelRootCaCert = $("<label for='" + id + "RootCaCert'>Root CA Certificate</label>");
+                var $labelRootCaCert = $("<label class='form-label small' for='" + id + "RootCaCert'>Root CA Certificate</label>");
 
-                var $clientCert = $("<textarea class='form-control' id='" + id + "ClientCert' rows='4'></textarea>")
+                var $clientCert = $("<textarea class='form-control form-control-sm' id='" + id + "ClientCert' rows='3'></textarea>")
                                         .val(mqttSetting.clientCert);
-                var $labelClientCert = $("<label for='" + id + "ClientCert'>Client Certificate</label>");
+                var $labelClientCert = $("<label class='form-label small' for='" + id + "ClientCert'>Client Certificate</label>");
 
-                var $clientKey = $("<textarea class='form-control' id='" + id + "ClientKey' rows='4'></textarea>")
+                var $clientKey = $("<textarea class='form-control form-control-sm' id='" + id + "ClientKey' rows='3'></textarea>")
                                         .val(mqttSetting.clientKey);
-                var $labelClientKey = $("<label for='" + id + "ClientKey'>Client Key</label>");
+                var $labelClientKey = $("<label class='form-label small' for='" + id + "ClientKey'>Client Key</label>");
 
                 $block.append($row0);
                 $block.append($row1);
@@ -181,21 +199,21 @@
                 $block.append($row4);
 
                 $row0.append(
-                    $("<div class='col'></div>")
+                    $("<div class='col-md-3 mb-2'></div>")
                     .append(createFormCheck([
                         $checkboxEnabled, $labelEnabled
                     ]))
                 );
 
                 $row0.append(
-                    $("<div class='col'></div>")
+                    $("<div class='col-md-3 mb-2'></div>")
                     .append(createFormCheck([
                         $useTls, $labelUseTls
                     ]))
                 );
 
                 $row0.append(
-                    $("<div class='col'></div>")
+                    $("<div class='col-md-4 mb-2'></div>")
                     .append(createFormGroup([
                         $labelBroker,
                         $broker
@@ -203,7 +221,7 @@
                 );
 
                 $row0.append(
-                    $("<div class='col'></div>")
+                    $("<div class='col-md-2 mb-2'></div>")
                     .append(createFormGroup([
                         $labelPort,
                         $port
@@ -211,7 +229,7 @@
                 );
 
                 $row1.append(
-                    $("<div class='col-6'></div>")
+                    $("<div class='col-md-6 mb-2'></div>")
                     .append(createFormGroup([
                         $labelUser,
                         $user
@@ -219,7 +237,7 @@
                 );
 
                 $row1.append(
-                    $("<div class='col-6'></div>")
+                    $("<div class='col-md-6 mb-2'></div>")
                     .append(createFormGroup([
                         $labelPassword,
                         $password
@@ -227,7 +245,7 @@
                 );
 
                 $row2.append(
-                    $("<div class='col-12'></div>")
+                    $("<div class='col-12 mb-2'></div>")
                     .append(createFormGroup([
                         $labelRootCaCert,
                         $rootCaCert
@@ -235,7 +253,7 @@
                 );
 
                 $row3.append(
-                    $("<div class='col-12'></div>")
+                    $("<div class='col-12 mb-2'></div>")
                     .append(createFormGroup([
                         $labelClientCert,
                         $clientCert
@@ -243,7 +261,7 @@
                 );
 
                 $row4.append(
-                    $("<div class='col-12'></div>")
+                    $("<div class='col-12 mb-2'></div>")
                     .append(createFormGroup([
                         $labelClientKey,
                         $clientKey
@@ -269,7 +287,7 @@
                         createMqttSetting("mqtt" + idx, rsp.data.mqttSettings[idx]);
                     }
 
-                    $("#myForm").append($("<button type='submit' class='btn btn-primary' onclick='save()'>Save</button>"));
+                    $("#myForm").append($("<button type='submit' class='btn btn-primary btn-sm' onclick='save()'>Save</button>"));
 
                 }).catch(function(rsp) {
                     alert("Internal error.");

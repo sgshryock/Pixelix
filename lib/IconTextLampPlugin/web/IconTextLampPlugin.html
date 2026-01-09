@@ -31,95 +31,102 @@
 
         <!-- Begin page content -->
         <main role="main" class="flex-shrink-0">
-            <div class="container">
-                <h1 class="mt-5">IconTextLampPlugin</h1>
-                <p><img src="IconTextLampPlugin.jpg" alt="Screenshot" /></p>
-                <p>The plugin shows an icon on left side, text on right side and lamps at the bottom.</p>
-                <p>Each part can be set separately via the REST API.</p>
-                <p>Show icon in the specified slot. Supported are GIF files and bitmap files (.bmp) with:</p>
-                <ul>
-                    <li>24 or 32 bits per pixel.</li>
-                    <li>1 plane.</li>
-                    <li>No compression.</li>
-                </ul>
-                <p>Note, if you are using _gimp_ to create bitmap files, please configure like:</p>
-                <ul>
-                    <li>Compatibility options: Don't write color informations.</li>
-                    <li>Extended options: Select 24 bit per pixel.</li>
-                </ul>
-                <p>If MQTT is built in and enabled, it will support Home Assistant MQTT discovery.</p>
-                <h2>Text tags</h2>
-                <p>The following tags are supported in the text:</p>
-                <ul>
-                    <li>{#RRGGBB} - Set solid text color (RRGGBB in hex)</li>
-                    <li>{lgv #RRGGBB,#RRGGBB,OFFSET,LENGTH} - Set linear vertical gradient text color (RRGGBB in hex, OFFSET in pixels, LENGTH in pixels)</li>
-                    <li>{lgh #RRGGBB,#RRGGBB,OFFSET,LENGTH} - Set linear horizontal gradient text color (RRGGBB in hex, OFFSET in pixels, LENGTH in pixels)</li>
-                    <li>{stc} - Activate solid text color</li>
-                    <li>{lgtc} - Activate linear gradient text color</li>
-                    <li>{hl} - Horizontal alignment left</li>
-                    <li>{hc} - Horizontal alignment center</li>
-                    <li>{hr} - Horizontal alignment right</li>
-                    <li>{vt} - Vertical alignment top</li>
-                    <li>{vc} - Vertical alignment center</li>
-                    <li>{vb} - Vertical alignment bottom</li>
-                    <li>{0xCC} - Special character code (CC in hex)</li>
-                </ul>
-                <h2>Configuration</h2>
-                <h3>Text</h3>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3">
-                    <form id="myFormText" action="javascript:setText(pluginUidText.options[pluginUidText.selectedIndex].value, justText.value, iconFileId.value, storeFlag.checked)">
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="pluginUidText">Plugin UID:</label>
-                            <select class="form-select" id="pluginUidText" name="pluginUid" size="1" onChange="getText(pluginUidText.options[pluginUidText.selectedIndex].value, 'justText', 'iconFileId', 'storeFlag')">
-                            </select>    
+            <div class="container-fluid px-4">
+                <div class="row">
+                    <!-- Left column - Plugin info -->
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <span>IconTextLampPlugin</span>
+                                <span class="badge bg-secondary">Display</span>
+                            </div>
+                            <div class="card-body py-2">
+                                <img src="IconTextLampPlugin.jpg" alt="Screenshot" class="img-fluid rounded mb-2" />
+                                <p class="small mb-1">Shows icon on left, text on right, and lamps at bottom.</p>
+                                <p class="small mb-1">Supports GIF and BMP files (24/32 bpp, no compression).</p>
+                                <p class="small mb-1">Supports Home Assistant MQTT discovery if enabled.</p>
+                                <p class="small mb-1"><strong>Text tags:</strong></p>
+                                <ul class="small mb-0">
+                                    <li>{#RRGGBB} - Solid text color</li>
+                                    <li>{lgv}/{lgh} - Gradient colors</li>
+                                    <li>{hl}/{hc}/{hr} - Horizontal alignment</li>
+                                    <li>{vt}/{vc}/{vb} - Vertical alignment</li>
+                                    <li>{0xCC} - Special character code</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="justText">Text:</label>
-                            <input class="form-control" type="text" id="justText" name="justText" value="" size="40" />
-                            <small class="form-text">The text to show on the display.</small>
+                    </div>
+                    <!-- Right column - Configuration -->
+                    <div class="col-lg-8">
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Text Configuration</div>
+                            <div class="card-body py-2">
+                                <form id="myFormText" action="javascript:setText(pluginUidText.options[pluginUidText.selectedIndex].value, justText.value, iconFileId.value, storeFlag.checked)">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="pluginUidText">Plugin UID</label>
+                                            <select class="form-select form-select-sm" id="pluginUidText" name="pluginUid" onChange="getText(pluginUidText.options[pluginUidText.selectedIndex].value, 'justText', 'iconFileId', 'storeFlag')">
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="iconFileId">Icon File ID</label>
+                                            <input class="form-control form-control-sm" type="number" id="iconFileId" name="iconFileId" min="0" max="255" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 mb-2">
+                                            <label class="form-label small" for="justText">Text</label>
+                                            <input class="form-control form-control-sm" type="text" id="justText" name="justText" value="" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="storeFlag" name="storeFlag" value="0" />
+                                                <label class="form-check-label small" for="storeFlag">Store persistent (used after restart)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="iconFileId">Icon file id:</label>
-                            <input class="form-control" type="number" id="iconFileId" name="iconFileId" min="0" max="255" />
-                            <small class="form-text">The file id of the icon which to show. Find the file id in the icons page. Use 255 to clear the icon.</small>
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Lamp Configuration</div>
+                            <div class="card-body py-2">
+                                <form id="myFormLamp" action="javascript:setLamp(pluginUidLamp.options[pluginUidLamp.selectedIndex].value, lampId.options[lampId.selectedIndex].value, lampState.options[lampState.selectedIndex].value)">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label small" for="pluginUidLamp">Plugin UID</label>
+                                            <select class="form-select form-select-sm" id="pluginUidLamp" name="pluginUid">
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label small" for="lampId">Lamp</label>
+                                            <select class="form-select form-select-sm" id="lampId" onChange="getLamp(pluginUidText.options[pluginUidText.selectedIndex].value, lampId.options[lampId.selectedIndex].value, 'lampState')">
+                                                <option value="0" selected>0</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label small" for="lampState">State</label>
+                                            <select class="form-select form-select-sm" id="lampState">
+                                                <option value="off" selected>off</option>
+                                                <option value="on">on</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="storeFlag" name="storeFlag" value="0" />
-                            <label class="form-label" for="storeFlag">Store the icon file id and the text persistent (true) or not (false). It will be used after restart.</label>
-                        </div>
-                        <input name="submit" type="submit" value="Update"/>
-                    </form>
-                </div>
-                <h3>Lamp</h3>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3">
-                    <form id="myFormLamp" action="javascript:setLamp(pluginUidLamp.options[pluginUidLamp.selectedIndex].value, lampId.options[lampId.selectedIndex].value, lampState.options[lampState.selectedIndex].value)">
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="pluginUidLamp">Plugin UID:</label>
-                            <select class="form-select" id="pluginUidLamp" name="pluginUid" size="1">
-                            </select>    
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="lampId">Lamp:</label>
-                            <select class="form-select" id="lampId" size="1" onChange="getLamp(pluginUidText.options[pluginUidText.selectedIndex].value, lampId.options[lampId.selectedIndex].value, 'lampState')">
-                                <option value="0" selected>0</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                            </select>    
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="lampState">State:</label>
-                            <select class="form-select" id="lampState" size="1">
-                                <option value="off" selected>off</option>
-                                <option value="on">on</option>
-                            </select>    
-                        </div>
-                        <input name="submit" type="submit" value="Update"/>
-                    </form>
+                    </div>
                 </div>
             </div>
         </main>
-  
+
         <!-- Footer -->
         <footer class="footer mt-auto py-3">
             <div class="container">
@@ -170,7 +177,7 @@
 
                             optionText = rsp.data.slots[slotIndex].uid;
                             optionText += " (";
-                            
+
                             if (0 === rsp.data.slots[slotIndex].alias.length) {
                                 optionText += "-"
                             } else {
@@ -184,7 +191,7 @@
                                 $option = $("<option>")
                                         .attr("value", "" + rsp.data.slots[slotIndex].uid)
                                         .text(optionText);
-                                
+
                                 $(elements[elemIndex]).append($option);
                             }
 
@@ -307,7 +314,7 @@
 
                 /* Disable all forms, until the plugin instances are loaded. */
                 disableUI();
-    
+
                 /* Load all plugin instances. */
                 getPluginInstances().then(function(cnt) {
                     var selectText      = document.getElementById("pluginUidText");

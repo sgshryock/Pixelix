@@ -31,37 +31,57 @@
 
         <!-- Begin page content -->
         <main role="main" class="flex-shrink-0">
-            <div class="container">
-                <h1 class="mt-5">CountdownPlugin</h1>
-                <p><img src="CountdownPlugin.jpg" alt="Screenshot" /></p>
-                <p>The plugin shows the remaining days until a configured target date.</p>
-                <h2>Configuration</h2>
-                <h3>Target Date</h3>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3">
-                    <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="pluginUid">Plugin UID:</label>
-                            <select class="form-select" id="pluginUid" size="1" onChange="getConfig(pluginUid.options[pluginUid.selectedIndex].value)">
-                            </select>
+            <div class="container-fluid px-4">
+                <div class="row">
+                    <!-- Left column - Plugin info -->
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <span>CountdownPlugin</span>
+                                <span class="badge bg-warning">Time</span>
+                            </div>
+                            <div class="card-body py-2">
+                                <img src="CountdownPlugin.jpg" alt="Screenshot" class="img-fluid rounded mb-2" />
+                                <p class="small mb-0">The plugin shows the remaining days until a configured target date.</p>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="targetDate">Target date:</label>
-                            <input class="form-control" type="date" id="targetDate" name="targetDate" value="2026-01-01" />
+                    </div>
+                    <!-- Right column - Configuration -->
+                    <div class="col-lg-8">
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Configuration</div>
+                            <div class="card-body py-2">
+                                <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="pluginUid">Plugin UID</label>
+                                            <select class="form-select form-select-sm" id="pluginUid" onChange="getConfig(pluginUid.options[pluginUid.selectedIndex].value)">
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="targetDate">Target Date</label>
+                                            <input class="form-control form-control-sm" type="date" id="targetDate" name="targetDate" value="2026-01-01" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="targetDayPlural">Plural Form</label>
+                                            <input class="form-control form-control-sm" type="text" id="targetDayPlural" name="targetDayPlural" value="days" />
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="targetDaySingular">Singular Form</label>
+                                            <input class="form-control form-control-sm" type="text" id="targetDaySingular" name="targetDaySingular" value="day" />
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="targetDayPlural">Target day in plural form:</label>
-                            <input class="form-control" type="text" id="targetDayPlural" name="targetDayPlural" value="days" />
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="targetDaySingular">Target day in singular form:</label>
-                            <input class="form-control" type="text" id="targetDaySingular" name="targetDaySingular" value="day" />
-                        </div>
-                        <input name="submit" type="submit" value="Update"/>
-                    </form>
+                    </div>
                 </div>
             </div>
         </main>
-  
+
         <!-- Footer -->
         <footer class="footer mt-auto py-3">
             <div class="container">
@@ -87,15 +107,15 @@
 
             var pluginName  = "CountdownPlugin";
             var restClient  = new pixelix.rest.Client();
-    
+
             function enableUI() {
                 utils.enableForm("myForm", true);
             }
-    
+
             function disableUI() {
                 utils.enableForm("myForm", false);
             }
-    
+
             function getPluginInstances() {
                 return restClient.getPluginInstances().then(function(rsp) {
                     var slotIndex   = 0;
@@ -108,7 +128,7 @@
 
                             optionText = rsp.data.slots[slotIndex].uid;
                             optionText += " (";
-                            
+
                             if (0 === rsp.data.slots[slotIndex].alias.length) {
                                 optionText += "-"
                             } else {
@@ -120,7 +140,7 @@
                             $option = $("<option>")
                                         .attr("value", "" + rsp.data.slots[slotIndex].uid)
                                         .text(optionText);
-                            
+
                             $("#pluginUid").append($option);
 
                             ++cnt;
@@ -133,7 +153,7 @@
                     return Promise.resolve(0);
                 });
             };
-    
+
             function getConfig(pluginUid) {
                 disableUI();
                 return utils.makeRequest({
@@ -151,12 +171,12 @@
                     enableUI();
                 });
             }
-    
+
             function setConfig(pluginUid) {
                 disableUI();
 
                 var date = new Date($("#targetDate").val());
-    
+
                 return utils.makeRequest({
                     method: "POST",
                     url: "/rest/api/v1/display/uid/" + pluginUid + "/countdown",
@@ -184,13 +204,13 @@
 
                 /* Disable all forms, until the plugin instances are loaded. */
                 disableUI();
-    
+
                 /* Load all plugin instances. */
                 getPluginInstances().then(function(cnt) {
                     var select = document.getElementById("pluginUid");
-    
+
                     if (0 < cnt) {
-    
+
                         return getConfig(
                             select.options[select.selectedIndex].value
                         );

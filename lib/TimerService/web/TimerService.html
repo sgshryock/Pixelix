@@ -31,21 +31,34 @@
 
         <!-- Begin page content -->
         <main role="main" class="flex-shrink-0">
-            <div class="container">
-                <h1 class="mt-5">TimerService</h1>
-                <p>Use the timers to control the display on/off state and its brightness level in %.</p>
-                <p>Notes:</p>
-                <ul>
-                    <li>Timer settings are only active, if the timer is enabled.</li>
-                    <li>For the brightness level, the value range is from 0% to 100%.</li>
-                    <li>To avoid any brightness change, use the value -1.</li>
-                    <li>The brightness adjustment will be applied only if the automatic brightness adjustment is disabled.</li>
-                    <li>If the brightness level is lower than the min. brightness soft limit, the min. soft limit will be set.</li>
-                    <li>If the brightness level is greater than the max. brightness soft limit, the max. soft limit will be set.</li>
-                    <li>The timer uses the local time. See its time zone in the settings.</li>
-                </ul>
-                <form id="myForm" action="javascript:save()">
-                </form>
+            <div class="container-fluid px-4">
+                <div class="row">
+                    <!-- Left column - Service info -->
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <span>TimerService</span>
+                                <span class="badge bg-primary">Service</span>
+                            </div>
+                            <div class="card-body py-2">
+                                <p class="small mb-1">Control display on/off state and brightness level.</p>
+                                <p class="small mb-1">Timer settings are only active if enabled.</p>
+                                <p class="small mb-1">Brightness range: 0% to 100%, use -1 for no change.</p>
+                                <p class="small mb-0">Timer uses local time (see time zone in settings).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right column - Configuration -->
+                    <div class="col-lg-8">
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Configuration</div>
+                            <div class="card-body py-2">
+                                <form id="myForm" action="javascript:save()">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -88,13 +101,13 @@
             }
 
             function createFormGroup(elements) {
-                var $formGroup = $("<div class='form-group'></div>");
+                var $formGroup = $("<div class='mb-2'></div>");
                 var idx;
 
                 for (idx = 0; idx < elements.length; ++idx) {
                     $formGroup.append(elements[idx]);
                 }
-                
+
                 return $formGroup;
             }
 
@@ -105,7 +118,7 @@
                 for (idx = 0; idx < elements.length; ++idx) {
                     $formGroup.append(elements[idx]);
                 }
-                
+
                 return $formGroup;
             }
 
@@ -116,18 +129,18 @@
                 for (idx = 0; idx < elements.length; ++idx) {
                     $formGroup.append(elements[idx]);
                 }
-                
+
                 return $formGroup;
             }
 
             function createInputGroup(elements) {
-                var $formGroup = $("<div class='input-group'></div>");
+                var $formGroup = $("<div class='input-group input-group-sm'></div>");
                 var idx;
 
                 for (idx = 0; idx < elements.length; ++idx) {
                     $formGroup.append(elements[idx]);
                 }
-                
+
                 return $formGroup;
             }
 
@@ -143,93 +156,93 @@
                 if (0 > percent) {
                     return -1;
                 }
-                
+
                 return (percent * 255 / 100).toFixed();
             }
 
             function createTimerSetting(id, timerSetting) {
-                var $block = $("<div class='h-100 p-2 bg-body-tertiary border rounded-3 mt-2'></div>");
-                var $row = $("<div class='row'></div>")
-                
+                var $block = $("<div class='border rounded p-2 mb-2'></div>");
+                var $row = $("<div class='row g-2 align-items-center'></div>")
+
                 var $checkboxEnabled = $("<input type='checkbox' class='form-check-input' id='" + id + "Enabled' />")
                                         .prop("checked", timerSetting.enabled);
-                var $labelEnabled = $("<label class='form-check-label' for='" + id + "Enabled'>Enabled</label>");
+                var $labelEnabled = $("<label class='form-check-label small' for='" + id + "Enabled'>Enabled</label>");
 
-                var $labelHour = $("<label for='" + id + "Hour'>Hour:</label>");
-                var $inputHour = $("<input type='number' class='form-control' id='" + id + "Hour' min='0' max='23' />")
+                var $labelHour = $("<label class='form-label small mb-0' for='" + id + "Hour'>Hour</label>");
+                var $inputHour = $("<input type='number' class='form-control form-control-sm' id='" + id + "Hour' min='0' max='23' />")
                                     .val(timerSetting.hour);
 
-                var $labelMinute = $("<label for='" + id + "Minute'>Minute:</label>");
-                var $inputMinute = $("<input type='number' class='form-control' id='" + id + "Minute' min='0' max='59' />")
+                var $labelMinute = $("<label class='form-label small mb-0' for='" + id + "Minute'>Minute</label>");
+                var $inputMinute = $("<input type='number' class='form-control form-control-sm' id='" + id + "Minute' min='0' max='59' />")
                                     .val(timerSetting.minute);
 
                 var $checkboxMo = $("<input type='checkbox' class='form-check-input' id='" + id + "Mo' />")
                                     .prop("checked", timerSetting.monday);
-                var $labelMo = $("<label class='form-check-label' for='" + id + "Mo'>Mo</label>");
+                var $labelMo = $("<label class='form-check-label small' for='" + id + "Mo'>Mo</label>");
 
                 var $checkboxTu = $("<input type='checkbox' class='form-check-input' id='" + id + "Tu' />")
                                     .prop("checked", timerSetting.tuesday);
-                var $labelTu = $("<label class='form-check-label' for='" + id + "Tu'>Tu</label>");
+                var $labelTu = $("<label class='form-check-label small' for='" + id + "Tu'>Tu</label>");
 
                 var $checkboxWe = $("<input type='checkbox' class='form-check-input' id='" + id + "We' />")
                                     .prop("checked", timerSetting.wednesday);
-                var $labelWe = $("<label class='form-check-label' for='" + id + "We'>We</label>");
+                var $labelWe = $("<label class='form-check-label small' for='" + id + "We'>We</label>");
 
                 var $checkboxTh = $("<input type='checkbox' class='form-check-input' id='" + id + "Th' />")
                                     .prop("checked", timerSetting.thursday);
-                var $labelTh = $("<label class='form-check-label' for='" + id + "Th'>Th</label>");
+                var $labelTh = $("<label class='form-check-label small' for='" + id + "Th'>Th</label>");
 
                 var $checkboxFr = $("<input type='checkbox' class='form-check-input' id='" + id + "Fr' />")
                                     .prop("checked", timerSetting.friday);
-                var $labelFr = $("<label class='form-check-label' for='" + id + "Fr'>Fr</label>");
+                var $labelFr = $("<label class='form-check-label small' for='" + id + "Fr'>Fr</label>");
 
                 var $checkboxSa = $("<input type='checkbox' class='form-check-input' id='" + id + "Sa' />")
                                     .prop("checked", timerSetting.saturday);
-                var $labelSa = $("<label class='form-check-label' for='" + id + "Sa'>Sa</label>");
+                var $labelSa = $("<label class='form-check-label small' for='" + id + "Sa'>Sa</label>");
 
                 var $checkboxSu = $("<input type='checkbox' class='form-check-input' id='" + id + "Su' />")
                                     .prop("checked", timerSetting.sunday);
-                var $labelSu = $("<label class='form-check-label' for='" + id + "Su'>Su</label>");
+                var $labelSu = $("<label class='form-check-label small' for='" + id + "Su'>Su</label>");
 
-                var $labelDisplayStateNone = $("<label for='" + id + "DisplayStateNone'>None</label>");
+                var $labelDisplayStateNone = $("<label class='small' for='" + id + "DisplayStateNone'>None</label>");
                 var $radioDisplayStateNone = $("<input type='radio' class='form-check-input' name='" + id + "DisplayState' id='" + id + "DisplayStateNone' value='0' />")
                                             .prop("checked", 0 === timerSetting.displayState);
-                var $labelDisplayStateOn = $("<label for='" + id + "DisplayStateOn'>On</label>");
+                var $labelDisplayStateOn = $("<label class='small' for='" + id + "DisplayStateOn'>On</label>");
                 var $radioDisplayStateOn = $("<input type='radio' class='form-check-input' name='" + id + "DisplayState' id='" + id + "DisplayStateOn' value='1' />")
                                             .prop("checked", 1 === timerSetting.displayState);
-                var $labelDisplayStateOff = $("<label for='" + id + "DisplayStateOff'>Off</label>");
+                var $labelDisplayStateOff = $("<label class='small' for='" + id + "DisplayStateOff'>Off</label>");
                 var $radioDisplayStateOff = $("<input type='radio' class='form-check-input' name='" + id + "DisplayState' id='" + id + "DisplayStateOff' value='2' />")
                                             .prop("checked", 2 === timerSetting.displayState);
 
-                var $labelBrightness = $("<label for='" + id + "Brightness'>Brightness:</label>");
-                var $inputBrightness = $("<input type='number' class='form-control' id='" + id + "Brightness' min='-1' max='100' />")
+                var $labelBrightness = $("<label class='form-label small mb-0' for='" + id + "Brightness'>Brightness</label>");
+                var $inputBrightness = $("<input type='number' class='form-control form-control-sm' id='" + id + "Brightness' min='-1' max='100' />")
                                     .val(brightnessValueToPercent(timerSetting.brightness));
 
                 $block.append($row);
 
                 $row.append(
-                    $("<div class='col'></div>")
+                    $("<div class='col-auto'></div>")
                     .append(createFormCheck([
                         $checkboxEnabled, $labelEnabled
                     ]))
                 );
 
                 $row.append(
-                    $("<div class='col'></div>")
+                    $("<div class='col-auto'></div>")
                     .append(createFormGroup([
                         $labelHour, $inputHour
                     ]))
                 );
 
                 $row.append(
-                    $("<div class='col'></div>")
+                    $("<div class='col-auto'></div>")
                     .append(createFormGroup([
                         $labelMinute, $inputMinute
                     ]))
                 );
 
                 $row.append(
-                    $("<div class='col'></div>")
+                    $("<div class='col-auto'></div>")
                     .append(createFormCheckInline([
                         $checkboxSu, $labelSu
                     ]))
@@ -254,21 +267,21 @@
                 );
 
                 $row.append(
-                    $("<div class='col'></div>")
-                    .append($("<span class='m-2'>Display:</span>"))
-                    .append(createFormCheck([
-                        $labelDisplayStateNone, $radioDisplayStateNone
+                    $("<div class='col-auto'></div>")
+                    .append($("<span class='small me-2'>Display:</span>"))
+                    .append(createFormCheckInline([
+                        $radioDisplayStateNone, $labelDisplayStateNone
                     ]))
-                    .append(createFormCheck([
-                        $labelDisplayStateOn, $radioDisplayStateOn
+                    .append(createFormCheckInline([
+                        $radioDisplayStateOn, $labelDisplayStateOn
                     ]))
-                    .append(createFormCheck([
-                        $labelDisplayStateOff, $radioDisplayStateOff
+                    .append(createFormCheckInline([
+                        $radioDisplayStateOff, $labelDisplayStateOff
                     ]))
                 );
 
                 $row.append(
-                    $("<div class='col'></div>")
+                    $("<div class='col-auto'></div>")
                     .append($labelBrightness)
                     .append(createInputGroup([
                         $inputBrightness, $("<span class='input-group-text'>%</span>")
@@ -294,7 +307,7 @@
                         createTimerSetting("timer" + idx, rsp.data.timerSettings[idx]);
                     }
 
-                    $("#myForm").append($("<button type='submit' class='btn btn-primary' onclick='save()'>Save</button>"));
+                    $("#myForm").append($("<button type='submit' class='btn btn-primary btn-sm' onclick='save()'>Save</button>"));
 
                 }).catch(function(rsp) {
                     alert("Internal error.");

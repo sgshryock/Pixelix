@@ -31,72 +31,95 @@
 
         <!-- Begin page content -->
         <main role="main" class="flex-shrink-0">
-            <div class="container">
-                <h1 class="mt-5">SignalDetectorPlugin</h1>
-                <p><img src="SignalDetectorPlugin.jpg" alt="Screenshot" /></p>
-                <p>The plugin is able to detect a signal, which can be combined with up to 2 frequencies.</p>
-                <p>Each frequency must be detected for a specific configureable time.</p>
-                <p>As long as nothing is detected, the plugin will disable itself.</p>
-                <p>If a signal is detected, it will be shown on the display for the configured slot duration. After slot duration timeout or user changed the slot, the plugin will be disabled until next signal detection.</p>
-                <p>Additional a push notification can be configured. By default a GET is triggered. Using "GET" or "POST" as prefix its configureable. Example: "POST http://..."</p>
-                <h2>Configuration</h2>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3">
-                    <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="pluginUid">Plugin UID:</label>
-                            <select class="form-select" id="pluginUid" name="pluginUid" size="1" onChange="getConfig(pluginUid.options[pluginUidText.selectedIndex].value)">
-                            </select>
+            <div class="container-fluid px-4">
+                <div class="row">
+                    <!-- Left column - Plugin info -->
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <span>SignalDetectorPlugin</span>
+                                <span class="badge bg-warning">Audio</span>
+                            </div>
+                            <div class="card-body py-2">
+                                <img src="SignalDetectorPlugin.jpg" alt="Screenshot" class="img-fluid rounded mb-2" />
+                                <p class="small mb-1">Detects a signal combined with up to 2 frequencies.</p>
+                                <p class="small mb-1">Each frequency must be detected for a specific configurable time.</p>
+                                <p class="small mb-1">Plugin disables itself when nothing is detected.</p>
+                                <p class="small mb-0">Additional push notification can be configured (GET or POST).</p>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="text">Text:</label>
-                            <input class="form-control" type="text" id="text" name="text" value="" size="20" />
-                            <small class="form-text">The text to will be shown on the display if signal is detected.</small>
+                    </div>
+                    <!-- Right column - Configuration -->
+                    <div class="col-lg-8">
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Configuration</div>
+                            <div class="card-body py-2">
+                                <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="pluginUid">Plugin UID</label>
+                                            <select class="form-select form-select-sm" id="pluginUid" name="pluginUid" onChange="getConfig(pluginUid.options[pluginUid.selectedIndex].value)">
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="text">Display Text</label>
+                                            <input class="form-control form-control-sm" type="text" id="text" name="text" value="" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 mb-2">
+                                            <label class="form-label small" for="pushUrl">Push URL</label>
+                                            <input class="form-control form-control-sm" type="text" id="pushUrl" name="pushUrl" value="" />
+                                            <small class="form-text text-muted">URL triggered if signal is detected. Use "POST http://..." for POST requests.</small>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <fieldset class="border rounded p-2 mb-2">
+                                                <legend class="small fw-bold w-auto px-1 mb-0">Tone 1</legend>
+                                                <div class="mb-2">
+                                                    <label class="form-label small" for="freq_0">Frequency [Hz]</label>
+                                                    <input class="form-control form-control-sm" id="freq_0" type="number" min="0" max="20000"/>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label small" for="minDuration_0">Min. Duration [ms]</label>
+                                                    <input class="form-control form-control-sm" id="minDuration_0" type="number" min="0" max="10000"/>
+                                                </div>
+                                                <div class="mb-0">
+                                                    <label class="form-label small" for="threshold_0">Threshold</label>
+                                                    <input class="form-control form-control-sm" id="threshold_0" type="number" min="0" max="40000"/>
+                                                    <small class="form-text text-muted">Values above 2000 recommended.</small>
+                                                </div>
+                                            </fieldset>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <fieldset class="border rounded p-2 mb-2">
+                                                <legend class="small fw-bold w-auto px-1 mb-0">Tone 2</legend>
+                                                <div class="mb-2">
+                                                    <label class="form-label small" for="freq_1">Frequency [Hz]</label>
+                                                    <input class="form-control form-control-sm" id="freq_1" type="number" min="0" max="20000"/>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label small" for="minDuration_1">Min. Duration [ms]</label>
+                                                    <input class="form-control form-control-sm" id="minDuration_1" type="number" min="0" max="10000"/>
+                                                </div>
+                                                <div class="mb-0">
+                                                    <label class="form-label small" for="threshold_1">Threshold</label>
+                                                    <input class="form-control form-control-sm" id="threshold_1" type="number" min="0" max="40000"/>
+                                                    <small class="form-text text-muted">Values above 2000 recommended.</small>
+                                                </div>
+                                            </fieldset>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="pushUrl">Push URL:</label>
-                            <input class="form-control" type="text" id="pushUrl" name="pushUrl" value="" size="20" />
-                            <small class="form-text">The URL which will be triggered if signal is detected.</small>
-                        </div>
-                        <fieldset class="form-group mb-3">
-                            <legend>Tone 1</legend>
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="freq_0">Signal frequency [Hz]:</label>
-                                <input class="form-control" id="freq_0" type="number" min="0" max="20000"/>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="minDuration_0">Min. duration [ms]:</label>
-                                <input class="form-control" id="minDuration_0" type="number" min="0" max="10000"/>
-                                <small class="form-text">The minimum duration the signal must be present to be detected.</small>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="threshold_0">Threshold:</label>
-                                <input class="form-control" id="threshold_0" type="number" min="0" max="40000"/>
-                                <small class="form-text">The frequency must be over this threshold to be able to detect it. Usually good values are above 2000.</small>
-                            </div>
-                        </fieldset>
-                        <fieldset>
-                            <legend>Tone 2</legend>
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="freq_1">Signal frequency [Hz]:</label>
-                                <input class="form-control" id="freq_1" type="number" min="0" max="20000"/>    
-                            </div>
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="minDuration_1">Min. duration [ms]:</label>
-                                <input class="form-control" id="minDuration_1" type="number" min="0" max="10000"/>
-                                <small class="form-text">The minimum duration the signal must be present to be detected.</small>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="threshold_1">Threshold:</label>
-                                <input class="form-control" id="threshold_1" type="number" min="0" max="40000"/>
-                                <small class="form-text">The frequency must be over this threshold to be able to detect it. Usually good values are above 2000.</small>
-                            </div>
-                        </fieldset>
-                        <input name="submit" type="submit" value="Update"/>
-                    </form>
+                    </div>
                 </div>
             </div>
         </main>
-  
+
         <!-- Footer -->
         <footer class="footer mt-auto py-3">
             <div class="container">
@@ -145,7 +168,7 @@
 
                             optionText = rsp.data.slots[slotIndex].uid;
                             optionText += " (";
-                            
+
                             if (0 === rsp.data.slots[slotIndex].alias.length) {
                                 optionText += "-"
                             } else {
@@ -159,7 +182,7 @@
                                 $option = $("<option>")
                                         .attr("value", "" + rsp.data.slots[slotIndex].uid)
                                         .text(optionText);
-                                
+
                                 $(elements[elemIndex]).append($option);
                             }
 
@@ -231,7 +254,7 @@
 
                 /* Disable all forms, until the plugin instances are loaded. */
                 disableUI();
-    
+
                 /* Load all plugin instances. */
                 getPluginInstances().then(function(cnt) {
                     var select = document.getElementById("pluginUid");

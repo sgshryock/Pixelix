@@ -31,41 +31,59 @@
 
         <!-- Begin page content -->
         <main role="main" class="flex-shrink-0">
-            <div class="container">
-                <h1 class="mt-5">MultiIconPlugin</h1>
-                <p><img src="MultiIconPlugin.jpg" alt="Screenshot" /></p>
-                <p>The plugin is able to show multiple different icons.</p>
-                <p>Each icon can be set separately via API.</p>
-                <h2>Configuration</h2>
-                <h3>Slot icons</h3>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3">
-                    <form id="myFormSlot" enctype="multipart/form-data" action="javascript:setSlotsByForm('myFormSlot')">
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="pluginUidSlot">Plugin UID:</label>
-                            <select class="form-select" id="pluginUidSlot" name="pluginUid" size="1" onChange="updateForms()">
-                            </select>    
+            <div class="container-fluid px-4">
+                <div class="row">
+                    <!-- Left column - Plugin info -->
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <span>MultiIconPlugin</span>
+                                <span class="badge bg-secondary">Display</span>
+                            </div>
+                            <div class="card-body py-2">
+                                <img src="MultiIconPlugin.jpg" alt="Screenshot" class="img-fluid rounded mb-2" />
+                                <p class="small mb-1">Displays multiple different icons simultaneously.</p>
+                                <p class="small mb-0">Each icon can be set separately via API.</p>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="icon0FileId">Icon 0 file id:</label>
-                            <input class="form-control" type="number" id="icon0FileId" name="icon0FileId" min="0" max="255" />
-                            <small class="form-text">The file id of the icon which to show. Find the file id in the icons page. Use 255 to clear the icon.</small>
+                    </div>
+                    <!-- Right column - Configuration -->
+                    <div class="col-lg-8">
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Configuration</div>
+                            <div class="card-body py-2">
+                                <form id="myFormSlot" enctype="multipart/form-data" action="javascript:setSlotsByForm('myFormSlot')">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="pluginUidSlot">Plugin UID</label>
+                                            <select class="form-select form-select-sm" id="pluginUidSlot" name="pluginUid" onChange="updateForms()">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label small" for="icon0FileId">Icon 0 File ID</label>
+                                            <input class="form-control form-control-sm" type="number" id="icon0FileId" name="icon0FileId" min="0" max="255" />
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label small" for="icon1FileId">Icon 1 File ID</label>
+                                            <input class="form-control form-control-sm" type="number" id="icon1FileId" name="icon1FileId" min="0" max="255" />
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label small" for="icon2FileId">Icon 2 File ID</label>
+                                            <input class="form-control form-control-sm" type="number" id="icon2FileId" name="icon2FileId" min="0" max="255" />
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted mb-2 d-block">Use 255 to clear an icon slot.</small>
+                                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="icon1FileId">Icon 1 file id:</label>
-                            <input class="form-control" type="number" id="icon1FileId" name="icon1FileId" min="0" max="255" />
-                            <small class="form-text">The file id of the icon which to show. Find the file id in the icons page. Use 255 to clear the icon.</small>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="icon2FileId">Icon 2 file id:</label>
-                            <input class="form-control" type="number" id="icon2FileId" name="icon2FileId" min="0" max="255" />
-                            <small class="form-text">The file id of the icon which to show. Find the file id in the icons page. Use 255 to clear the icon.</small>
-                        </div>
-                        <input name="submit" type="submit" value="Update"/>
-                    </form>
+                    </div>
                 </div>
             </div>
         </main>
-  
+
         <!-- Footer -->
         <footer class="footer mt-auto py-3">
             <div class="container">
@@ -114,7 +132,7 @@
 
                             optionText = rsp.data.slots[slotIndex].uid;
                             optionText += " (";
-                            
+
                             if (0 === rsp.data.slots[slotIndex].alias.length) {
                                 optionText += "-"
                             } else {
@@ -128,7 +146,7 @@
                                 $option = $("<option>")
                                         .attr("value", "" + rsp.data.slots[slotIndex].uid)
                                         .text(optionText);
-                                
+
                                 $(elements[elemIndex]).append($option);
                             }
 
@@ -243,7 +261,7 @@
                 $.fn.serializeAllArray = function () {
                     var data = $(this).serializeArray();
 
-                    $(':disabled[name]', this).each(function () { 
+                    $(':disabled[name]', this).each(function () {
                         data.push({ name: this.name, value: $(this).val() });
                     });
 
@@ -255,10 +273,10 @@
                 menu.addSubMenu(menu.data, "Plugins", pluginSubMenu);
                 menu.addSubMenu(menu.data, "Services", serviceSubMenu);
                 menu.create("menu", menu.data);
-                
+
                 /* Disable all forms, until the plugin instances are loaded. */
                 disableUI();
-    
+
                 /* Load all plugin instances. */
                 getPluginInstances().then(function(cnt) {
                     if (0 < cnt) {

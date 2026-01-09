@@ -31,93 +31,93 @@
 
         <!-- Begin page content -->
         <main role="main" class="flex-shrink-0">
-            <div class="container">
-                <h1 class="mt-5">GrabViaRestPlugin</h1>
-                <p><img src="GrabViaRestPlugin.jpg" alt="Screenshot" /></p>
-                <p>This plugin connects to a REST API to fetch information in JSON format and displays the results on the display.</p>
-                <p><strong>Example:</strong></p>
-                <p>JSON payload:</p>
-<p><code>
-{
-    "temperature": 22.5,
-    "humidity": 60
-}
-</code></p>
-                <p>The following filter extracts the temperature value from the JSON payload.</p>
-<p><code>
-{
-    "temperature": true
-}
-</code></p>
-                <p><a href="https://github.com/BlueAndi/Pixelix/tree/Development/doc/grabConfigs/rest" target="_blank">Configuration examples</a> may help to configure.</p>
-                <h2>Format text tags</h2>
-                <p>The following tags are supported in the format text:</p>
-                <ul>
-                    <li>{#RRGGBB} - Set solid text color (RRGGBB in hex)</li>
-                    <li>{lgv #RRGGBB,#RRGGBB,OFFSET,LENGTH} - Set linear vertical gradient text color (RRGGBB in hex, OFFSET in pixels, LENGTH in pixels)</li>
-                    <li>{lgh #RRGGBB,#RRGGBB,OFFSET,LENGTH} - Set linear horizontal gradient text color (RRGGBB in hex, OFFSET in pixels, LENGTH in pixels)</li>
-                    <li>{stc} - Activate solid text color</li>
-                    <li>{lgtc} - Activate linear gradient text color</li>
-                    <li>{hl} - Horizontal alignment left</li>
-                    <li>{hc} - Horizontal alignment right</li>
-                    <li>{hr} - Horizontal alignment center</li>
-                    <li>{vt} - Vertical alignment top</li>
-                    <li>{vc} - Vertical alignment center</li>
-                    <li>{vb} - Vertical alignment bottom</li>
-                    <li>{0xCC} - Special character code (CC in hex)</li>
-                </ul>
-                <p>Use for numbers always "%f", independed whether its a integer or floating point number.</p>
-                <p>In all other cases use "%s".</p>
-                <h2>Configuration</h2>
-                <h3>User</h3>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3">
-                    <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="pluginUid">Plugin UID:</label>
-                            <select class="form-select" id="pluginUid" size="1" onChange="getConfig(pluginUid.options[pluginUid.selectedIndex].value)">
-                            </select>
+            <div class="container-fluid px-4">
+                <div class="row">
+                    <!-- Left column - Plugin info -->
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <span>GrabViaRestPlugin</span>
+                                <span class="badge bg-primary">Data</span>
+                            </div>
+                            <div class="card-body py-2">
+                                <img src="GrabViaRestPlugin.jpg" alt="Screenshot" class="img-fluid rounded mb-2" />
+                                <p class="small mb-1">Connects to a REST API to fetch JSON data and display results.</p>
+                                <p class="small mb-1"><a href="https://github.com/BlueAndi/Pixelix/tree/Development/doc/grabConfigs/rest" target="_blank">Configuration examples</a></p>
+                                <p class="small mb-1"><strong>Format tags:</strong></p>
+                                <ul class="small mb-1">
+                                    <li>{#RRGGBB} - Set solid text color</li>
+                                    <li>{lgv #RRGGBB,#RRGGBB,OFFSET,LENGTH} - Linear vertical gradient</li>
+                                    <li>{lgh #RRGGBB,#RRGGBB,OFFSET,LENGTH} - Linear horizontal gradient</li>
+                                    <li>{stc} - Activate solid text color</li>
+                                    <li>{lgtc} - Activate linear gradient text color</li>
+                                    <li>{hl}/{hc}/{hr} - Horizontal align left/center/right</li>
+                                    <li>{vt}/{vc}/{vb} - Vertical align top/center/bottom</li>
+                                    <li>{0xCC} - Special character code</li>
+                                </ul>
+                                <p class="small mb-0">Use "%f" for numbers, "%s" for strings.</p>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="method">Method:</label>
-                            <input class="form-control" type="text" id="method" name="method" value="GET" />
-                            <small class="form-text text-muted">The HTTP method.</small>
+                    </div>
+                    <!-- Right column - Configuration -->
+                    <div class="col-lg-8">
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Configuration</div>
+                            <div class="card-body py-2">
+                                <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="pluginUid">Plugin UID</label>
+                                            <select class="form-select form-select-sm" id="pluginUid" onChange="getConfig(pluginUid.options[pluginUid.selectedIndex].value)">
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="method">Method</label>
+                                            <input class="form-control form-control-sm" type="text" id="method" name="method" value="GET" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 mb-2">
+                                            <label class="form-label small" for="url">URL</label>
+                                            <input class="form-control form-control-sm" type="text" id="url" name="url" value="" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 mb-2">
+                                            <label class="form-label small" for="filter">Filter</label>
+                                            <input class="form-control form-control-sm" type="text" id="filter" name="filter" value="null" />
+                                            <small class="form-text text-muted">JSON filter. See <a href="https://arduinojson.org/news/2020/03/22/version-6-15-0/" target="_blank">ArduinoJson filtering</a>.</small>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="iconFileId">Icon File ID</label>
+                                            <input class="form-control form-control-sm" type="number" id="iconFileId" name="iconFileId" min="0" max="255" />
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="format">Format</label>
+                                            <input class="form-control form-control-sm" type="text" id="format" name="format" value="%s" maxlength="40" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="multiplier">Multiplier</label>
+                                            <input class="form-control form-control-sm" type="number" id="multiplier" name="multiplier" value="1" />
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="offset">Offset</label>
+                                            <input class="form-control form-control-sm" type="number" id="offset" name="offset" value="0" />
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="url">URL:</label>
-                            <input class="form-control" type="text" id="url" name="url" value="" size="80" />
-                            <small class="form-text">The REST API path.</small>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="filter">Filter:</label>
-                            <input class="form-control" type="text" id="filter" name="filter" value="null" size="80" />
-                            <small class="form-text">Filter to identify the value in the JSON response. See details in <a href="https://arduinojson.org/news/2020/03/22/version-6-15-0/" target="_blank">ArduinoJson 6.15: Filtering done right</a> chapter.</small>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="iconFileId">Icon file id:</label>
-                            <input class="form-control" type="number" id="iconFileId" name="iconFileId" min="0" max="255" />
-                            <small class="form-text">The file id of the icon which to show. Find the file id in the icons page. Use 255 to clear the icon.</small>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="format">Format:</label>
-                            <input class="form-control" type="text" id="format" name="format" value="%s" maxlength="40" />
-                            <small class="form-text">The format specifier. Supported are only "%s" for strings and "%f" for numbers.</small>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="multiplier">Multiplier:</label>
-                            <input class="form-control" type="number" id="multiplier" name="multiplier" value="1" />
-                            <small class="form-text">Number which is multiplied with a number value. Not used for string values.</small>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="offset">Offset:</label>
-                            <input class="form-control" type="number" id="offset" name="offset" value="0" />
-                            <small class="form-text">Number which is added to a number value. Not used for string values.</small>
-                        </div>
-                        <input name="submit" type="submit" value="Update"/>
-                    </form>
+                    </div>
                 </div>
             </div>
         </main>
-  
+
         <!-- Footer -->
         <footer class="footer mt-auto py-3">
             <div class="container">
@@ -143,15 +143,15 @@
 
             var pluginName  = "GrabViaRestPlugin";
             var restClient  = new pixelix.rest.Client();
-    
+
             function enableUI() {
                 utils.enableForm("myForm", true);
             }
-    
+
             function disableUI() {
                 utils.enableForm("myForm", false);
             }
-    
+
             function getPluginInstances() {
                 return restClient.getPluginInstances().then(function(rsp) {
                     var slotIndex   = 0;
@@ -164,7 +164,7 @@
 
                             optionText = rsp.data.slots[slotIndex].uid;
                             optionText += " (";
-                            
+
                             if (0 === rsp.data.slots[slotIndex].alias.length) {
                                 optionText += "-"
                             } else {
@@ -176,7 +176,7 @@
                             $option = $("<option>")
                                         .attr("value", "" + rsp.data.slots[slotIndex].uid)
                                         .text(optionText);
-                            
+
                             $("#pluginUid").append($option);
 
                             ++cnt;
@@ -189,7 +189,7 @@
                     return Promise.resolve(0);
                 });
             };
-    
+
             function getConfig(pluginUid) {
                 disableUI();
                 return utils.makeRequest({
@@ -243,7 +243,7 @@
 
                 /* Disable all forms, until the plugin instances are loaded. */
                 disableUI();
-    
+
                 /* Load all plugin instances. */
                 getPluginInstances().then(function(cnt) {
                     var select = document.getElementById("pluginUid");

@@ -31,36 +31,56 @@
 
         <!-- Begin page content -->
         <main role="main" class="flex-shrink-0">
-            <div class="container">
-                <h1 class="mt-5">SensorPlugin</h1>
-                <p><img src="SensorPlugin.jpg" alt="Screenshot" /></p>
-                <p>The plugin shows sensor values of the selected sensor channel.</p>
-                <p>Which kind of sensor is available depends on the installed sensor drivers.</p>
-                <h2>Configuration</h2>
-                <h3>Sensor and Channel</h3>
-                <div class="h-100 p-2 bg-body-tertiary border rounded-3">
-                    <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="pluginUid">Plugin UID:</label>
-                            <select class="form-select" id="pluginUid" size="1" onChange="getSensorAndChannel(pluginUid.options[pluginUid.selectedIndex].value)">
-                            </select>    
+            <div class="container-fluid px-4">
+                <div class="row">
+                    <!-- Left column - Plugin info -->
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <span>SensorPlugin</span>
+                                <span class="badge bg-info">Sensor</span>
+                            </div>
+                            <div class="card-body py-2">
+                                <img src="SensorPlugin.jpg" alt="Screenshot" class="img-fluid rounded mb-2" />
+                                <p class="small mb-1">Shows sensor values of the selected sensor channel.</p>
+                                <p class="small mb-0">Which kind of sensor is available depends on the installed sensor drivers.</p>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="sensorList">Sensor:</label>
-                            <select class="form-select" id="sensorList" onChange="updateChannelList(sensorList.options[sensorList.selectedIndex].value)">
-                            </select>
+                    </div>
+                    <!-- Right column - Configuration -->
+                    <div class="col-lg-8">
+                        <div class="card mb-3">
+                            <div class="card-header py-2">Configuration</div>
+                            <div class="card-body py-2">
+                                <form id="myForm" action="javascript:setConfig(pluginUid.options[pluginUid.selectedIndex].value)">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="pluginUid">Plugin UID</label>
+                                            <select class="form-select form-select-sm" id="pluginUid" onChange="getSensorAndChannel(pluginUid.options[pluginUid.selectedIndex].value)">
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="sensorList">Sensor</label>
+                                            <select class="form-select form-select-sm" id="sensorList" onChange="updateChannelList(sensorList.options[sensorList.selectedIndex].value)">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label small" for="channelList">Channel</label>
+                                            <select class="form-select form-select-sm" id="channelList">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="channelList">Channel:</label>
-                            <select class="form-select" id="channelList">
-                            </select>    
-                        </div>
-                        <input name="submit" type="submit" value="Update"/>
-                    </form>
-                </div>  
+                    </div>
+                </div>
             </div>
         </main>
-  
+
         <!-- Footer -->
         <footer class="footer mt-auto py-3">
             <div class="container">
@@ -87,15 +107,15 @@
             var pluginName  = "SensorPlugin";
             var restClient  = new pixelix.rest.Client();
             var sensors     = [];
-    
+
             function enableUI() {
                 utils.enableForm("myForm", true);
             }
-    
+
             function disableUI() {
                 utils.enableForm("myForm", false);
             }
-    
+
             function getPluginInstances() {
                 return restClient.getPluginInstances().then(function(rsp) {
                     var slotIndex   = 0;
@@ -108,7 +128,7 @@
 
                             optionText = rsp.data.slots[slotIndex].uid;
                             optionText += " (";
-                            
+
                             if (0 === rsp.data.slots[slotIndex].alias.length) {
                                 optionText += "-"
                             } else {
@@ -120,7 +140,7 @@
                             $option = $("<option>")
                                 .val(rsp.data.slots[slotIndex].uid)
                                 .text(optionText);
-                            
+
                             $("#pluginUid").append($option);
 
                             ++cnt;
@@ -146,7 +166,7 @@
                         .text("-");
 
                     $("#sensorList").append($option);
-                    
+
                     for(index = 0; index < sensors.length; ++index) {
 
                         if (true === sensors[index].isAvailable) {
@@ -164,7 +184,7 @@
                     return Promise.resolve();
                 });
             }
-    
+
             function getSensorAndChannel(pluginUid) {
                 disableUI();
                 return utils.makeRequest({
@@ -189,7 +209,7 @@
 
                         } else {
                             $("#sensorList").val(rsp.data.sensorIndex);
-                            
+
                             updateChannelList(rsp.data.sensorIndex)
 
                             $("#channelList").val(rsp.data.channelIndex);
@@ -248,7 +268,7 @@
 
                 /* Disable all forms, until the plugin instances are loaded. */
                 disableUI();
-    
+
                 /* Get all available sensors. */
                 getSensors()
                 /* Load all plugin instances. */
