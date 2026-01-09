@@ -427,13 +427,23 @@ public:
     }
 
     /**
+     * Get GitHub repository URL for OTA updates.
+     *
+     * @return Key value pair
+     */
+    KeyValueString& getGithubRepoUrl()
+    {
+        return m_githubRepoUrl;
+    }
+
+    /**
      * Settings version
      * The version number shall be increased by 1 after:
      * - a new setting was added or
      * - a existing setting changed
      * - a existing setting was removed
      */
-    static const uint32_t VERSION = 4U;
+    static const uint32_t VERSION = 5U;
 
 private:
 
@@ -466,6 +476,7 @@ private:
     KeyValueInt32          m_linearGradientOffset;   /**< Linear gradient offset */
     KeyValueUInt32         m_linearGradientLength;   /**< Linear gradient length */
     KeyValueBool           m_linearGradientVertical; /**< Linear gradient vertical */
+    KeyValueString         m_githubRepoUrl;          /**< GitHub repository URL for OTA updates */
 
     /**
      * Constructs the settings service instance.

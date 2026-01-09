@@ -150,6 +150,9 @@ static const char*  KEY_LINEAR_GRADIENT_LENGTH      = "lg_length";
 /** Linear gradient vertical key */
 static const char*  KEY_LINEAR_GRADIENT_VERTICAL     = "lg_vertical";
 
+/** GitHub repository URL key */
+static const char*  KEY_GITHUB_REPO_URL              = "gh_repo_url";
+
 /* ---------- Key value pair names ---------- */
 
 /** SettingsService version name */
@@ -229,6 +232,9 @@ static const char*  NAME_LINEAR_GRADIENT_LENGTH      = "Linear gradient length i
 
 /** Linear gradient vertical name */
 static const char*  NAME_LINEAR_GRADIENT_VERTICAL    = "Linear gradient vertical (checked) or horizontal (unchecked)";
+
+/** GitHub repository URL name */
+static const char*  NAME_GITHUB_REPO_URL             = "GitHub repository URL for OTA updates";
 
 /* ---------- Default values ---------- */
 
@@ -310,6 +316,9 @@ static const uint16_t   DEFAULT_LINEAR_GRADIENT_LENGTH      = 32U;
 /** Linear gradient vertical default value */
 static const bool       DEFAULT_LINEAR_GRADIENT_VERTICAL    = false;
 
+/** GitHub repository URL default value */
+static const char*      DEFAULT_GITHUB_REPO_URL             = "";
+
 /* ---------- Minimum values ---------- */
 
 /** SettingsService version min. value */
@@ -386,6 +395,9 @@ static const int32_t    MIN_VALUE_LINEAR_GRADIENT_OFFSET    = 0;
 static const uint32_t   MIN_VALUE_LINEAR_GRADIENT_LENGTH    = 0U;
 
 /*                      MIN_VALUE_LINEAR_GRADIENT_VERTICAL */
+
+/** GitHub repository URL min. length */
+static const size_t     MIN_VALUE_GITHUB_REPO_URL           = 0U;
 
 /* ---------- Maximum values ---------- */
 
@@ -469,6 +481,9 @@ static const int32_t    MAX_VALUE_LINEAR_GRADIENT_OFFSET    = INT16_MAX;
 static const uint32_t   MAX_VALUE_LINEAR_GRADIENT_LENGTH    = UINT16_MAX;
 
 /*                      MIN_VALUE_LINEAR_GRADIENT_VERTICAL */
+
+/** GitHub repository URL max. length */
+static const size_t     MAX_VALUE_GITHUB_REPO_URL           = 128U;
 
 /* clang-format on */
 
@@ -657,7 +672,8 @@ SettingsService::SettingsService() :
     m_linearGradientColor2      (m_preferences, KEY_LINEAR_GRADIENT_COLOR2,     NAME_LINEAR_GRADIENT_COLOR2,    DEFAULT_LINEAR_GRADIENT_COLOR2, MIN_VALUE_LINEAR_GRADIENT_COLOR2,   MAX_VALUE_LINEAR_GRADIENT_COLOR2),
     m_linearGradientOffset      (m_preferences, KEY_LINEAR_GRADIENT_OFFSET,     NAME_LINEAR_GRADIENT_OFFSET,    DEFAULT_LINEAR_GRADIENT_OFFSET, MIN_VALUE_LINEAR_GRADIENT_OFFSET,   MAX_VALUE_LINEAR_GRADIENT_OFFSET),
     m_linearGradientLength      (m_preferences, KEY_LINEAR_GRADIENT_LENGTH,     NAME_LINEAR_GRADIENT_LENGTH,    DEFAULT_LINEAR_GRADIENT_LENGTH, MIN_VALUE_LINEAR_GRADIENT_LENGTH,   MAX_VALUE_LINEAR_GRADIENT_LENGTH),
-    m_linearGradientVertical    (m_preferences, KEY_LINEAR_GRADIENT_VERTICAL,   NAME_LINEAR_GRADIENT_VERTICAL,  DEFAULT_LINEAR_GRADIENT_VERTICAL)
+    m_linearGradientVertical    (m_preferences, KEY_LINEAR_GRADIENT_VERTICAL,   NAME_LINEAR_GRADIENT_VERTICAL,  DEFAULT_LINEAR_GRADIENT_VERTICAL),
+    m_githubRepoUrl             (m_preferences, KEY_GITHUB_REPO_URL,            NAME_GITHUB_REPO_URL,           DEFAULT_GITHUB_REPO_URL,        MIN_VALUE_GITHUB_REPO_URL,          MAX_VALUE_GITHUB_REPO_URL)
 {
     /* Skip m_version, because it shall not be modified by the user. */
     m_keyValueList.push_back(&m_wifiSSID);
@@ -685,6 +701,7 @@ SettingsService::SettingsService() :
     m_keyValueList.push_back(&m_linearGradientOffset);
     m_keyValueList.push_back(&m_linearGradientLength);
     m_keyValueList.push_back(&m_linearGradientVertical);
+    m_keyValueList.push_back(&m_githubRepoUrl);
 }
 /* clang-format on */
 
