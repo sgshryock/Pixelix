@@ -2031,11 +2031,9 @@ static void handlePartitionStatus(AsyncWebServerRequest* request)
     {
         RestartMgr& restartMgr              = RestartMgr::getInstance();
         bool        isFactoryAvailable      = restartMgr.isFactoryPartitionAvailable();
-        JsonObject  dataObj                 = jsonDoc.createNestedObject("data");
+        JsonVariant dataObj                 = RestUtil::prepareRspSuccess(jsonDoc);
 
         dataObj["factoryPartitionAvailable"] = isFactoryAvailable;
-
-        (void)RestUtil::prepareRspSuccess(jsonDoc);
     }
 
     RestUtil::sendJsonRsp(request, jsonDoc, httpStatusCode);
