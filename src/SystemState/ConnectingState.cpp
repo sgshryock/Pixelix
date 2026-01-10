@@ -43,6 +43,7 @@
 #include "IdleState.h"
 #include "ConnectedState.h"
 #include "ErrorState.h"
+#include "APState.h"
 
 #include <WiFi.h>
 #include <Logging.h>
@@ -95,12 +96,12 @@ void ConnectingState::entry(StateMachine& sm)
     if ((0 == m_wifiSSID.length()) ||
         (0 == m_wifiPassphrase.length()))
     {
-        String infoStr = "Keep button pressed and reboot. Set SSID/password via webserver.";
+        LOG_INFO("No WiFi credentials configured. Starting AP mode.");
 
-        LOG_INFO(infoStr);
-        SysMsg::getInstance().show(infoStr);
-
-        sm.setState(IdleState::getInstance());
+        /* Switch to AP mode so user can configure WiFi via captive portal. */
+        WiFi.mode(WIFI_MODE_AP);
+        sm.setState(APState::getInstance());
+        return;
     }
 
     /* Disable retry mechanism. */
