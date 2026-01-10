@@ -41,7 +41,6 @@
 #include "PluginList.h"
 #include "Services.h"
 #include "WiFiUtil.h"
-#include "SessionAuthMiddleware.h"
 
 #include <WiFi.h>
 #include <Esp.h>
@@ -107,9 +106,6 @@ static String getHeapSize();
 /******************************************************************************
  * Local Variables
  *****************************************************************************/
-
-/** Session-based authentication middleware for HTML pages. */
-static SessionAuthMiddleware gSessionAuthMiddleware;
 
 /** Path to the plugin webpages. */
 static const String PLUGIN_PAGE_PATH              = "/plugins/";
@@ -224,17 +220,13 @@ void Pages::init(AsyncWebServer& srv)
         settings.close();
     }
 
-    /* Configure session authentication middleware with credentials. */
-    gSessionAuthMiddleware.setUsername(webLoginUser.c_str());
-    gSessionAuthMiddleware.setPassword(webLoginPassword.c_str());
-
     /* Serve standard HTML pages. */
     while (UTIL_ARRAY_NUM(gHtmlPageRoutes) > idx)
     {
         const HtmlPageRoute& route = gHtmlPageRoutes[idx];
 
         (void)srv.on(route.page, route.reqMethodComposite, htmlPage)
-            .addMiddleware(&gSessionAuthMiddleware);
+            .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
 
         ++idx;
     }
@@ -249,7 +241,7 @@ void Pages::init(AsyncWebServer& srv)
 
     /* Serve files with volatile content with disabled cache control. */
     (void)srv.serveStatic("/configuration/", FILESYSTEM, "/configuration/")
-        .addMiddleware(&gSessionAuthMiddleware);
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
 
     /* Serve files with static content with enabled cache control.
      * The client may cache files from filesystem for 1 hour.
@@ -260,7 +252,7 @@ void Pages::init(AsyncWebServer& srv)
         const char* route = gStaticRoutesWithCache[idx];
 
         (void)srv.serveStatic(route, FILESYSTEM, route, "max-age=3600")
-            .addMiddleware(&gSessionAuthMiddleware);
+            .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
 
         ++idx;
     }
@@ -289,7 +281,7 @@ void Pages::init(AsyncWebServer& srv)
                              request->send(FILESYSTEM, request->url());
                          }
                      })
-            .addMiddleware(&gSessionAuthMiddleware);
+            .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
 
         ++idx;
     }
@@ -318,7 +310,7 @@ void Pages::init(AsyncWebServer& srv)
                              request->send(FILESYSTEM, request->url());
                          }
                      })
-            .addMiddleware(&gSessionAuthMiddleware);
+            .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
 
         ++idx;
     }
