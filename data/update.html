@@ -52,11 +52,11 @@
                     <div class="col-lg-9 col-md-8">
                         <h5 class="mb-3">Update & Backup</h5>
 
-                        <!-- GitHub OTA Update Card -->
+                        <!-- GitHub OTA Update Card - Coming Soon -->
                         <div class="card mb-3">
                             <div class="card-header py-2 d-flex justify-content-between align-items-center">
                                 <span>GitHub OTA Update</span>
-                                <span class="badge bg-info">Remote</span>
+                                <span class="badge bg-secondary">Coming Soon</span>
                             </div>
                             <div class="card-body py-2">
                                 <div class="row mb-2">
@@ -67,30 +67,10 @@
                                         <span id="currentVersion" class="small">Loading...</span>
                                     </div>
                                 </div>
-                                <div class="row mb-2" id="latestVersionRow" style="display: none;">
-                                    <div class="col-sm-4">
-                                        <span class="small text-muted">Latest Version:</span>
-                                    </div>
-                                    <div class="col-sm-8">
-                                        <span id="latestVersion" class="small">-</span>
-                                    </div>
-                                </div>
-                                <div id="releaseNotesRow" class="mb-2" style="display: none;">
-                                    <div class="small text-muted mb-1">Release Notes:</div>
-                                    <div id="releaseNotes" class="form-control form-control-sm small" style="height: 80px; overflow-y: auto; font-size: 0.75rem;"></div>
-                                </div>
-                                <div class="mb-2">
-                                    <span id="otaStatus" class="badge bg-secondary">Idle</span>
-                                    <span id="otaError" class="text-danger small ms-2" style="display: none;"></span>
-                                </div>
-                                <div class="progress mb-2" style="height: 16px;" id="otaProgressRow" style="display: none;">
-                                    <div id="progressBarOta" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
-                                </div>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-info" type="button" id="btnCheckUpdates" onclick="checkForUpdates();">Check for Updates</button>
-                                    <button class="btn btn-outline-success" type="button" id="btnStartUpdate" onclick="startOtaUpdate();" style="display: none;">Install Update</button>
-                                    <button class="btn btn-outline-danger" type="button" id="btnAbortOta" onclick="abortOtaUpdate();" style="display: none;">Abort</button>
-                                </div>
+                                <p class="small text-muted mb-0">
+                                    Automatic updates from GitHub releases are in development.
+                                    Use the Manual Firmware Update below for now.
+                                </p>
                             </div>
                         </div>
 
@@ -203,7 +183,6 @@
             var restClient  = new pixelix.rest.Client();
             var zip         = new JSZip();
             var hostname    = "~HOSTNAME~";
-            var otaPollingInterval = null;
 
             /* Disable all UI elements. */
             function disableUI() {
@@ -386,182 +365,19 @@
                 });
             }
 
-            /* Check for updates from GitHub */
-            function checkForUpdates() {
-                $("#btnCheckUpdates").prop("disabled", true);
-                $("#otaStatus").removeClass().addClass("badge bg-info").text("Checking...");
-                $("#otaError").hide();
-                $("#latestVersionRow").hide();
-                $("#releaseNotesRow").hide();
-
-                utils.makeRequest({
-                    method: "POST",
-                    url: "/rest/api/v1/ota/check",
-                    isJsonResponse: true
-                }).then(function(rsp) {
-                    startOtaPolling();
-                }).catch(function(err) {
-                    $("#otaStatus").removeClass().addClass("badge bg-danger").text("Error");
-                    $("#otaError").text(err.error || "Failed to check for updates").show();
-                    $("#btnCheckUpdates").prop("disabled", false);
-                });
-            }
-
-            /* Start OTA update download */
-            function startOtaUpdate() {
-                $("#btnStartUpdate").prop("disabled", true);
-
-                utils.makeRequest({
-                    method: "POST",
-                    url: "/rest/api/v1/ota/update",
-                    isJsonResponse: true
-                }).then(function(rsp) {
-                    startOtaPolling();
-                }).catch(function(err) {
-                    $("#otaStatus").removeClass().addClass("badge bg-danger").text("Error");
-                    $("#otaError").text(err.error || "Failed to start update").show();
-                    updateOtaButtons("error");
-                });
-            }
-
-            /* Abort OTA update */
-            function abortOtaUpdate() {
-                utils.makeRequest({
-                    method: "POST",
-                    url: "/rest/api/v1/ota/abort",
-                    isJsonResponse: true
-                }).then(function(rsp) {
-                    stopOtaPolling();
-                    pollOtaStatus();
-                });
-            }
-
-            /* Poll OTA status */
-            function pollOtaStatus() {
+            /* Fetch current version for display */
+            function fetchCurrentVersion() {
                 utils.makeRequest({
                     method: "GET",
                     url: "/rest/api/v1/ota/status",
                     isJsonResponse: true
                 }).then(function(rsp) {
-                    updateOtaUI(rsp.data);
+                    if (rsp.data) {
+                        $("#currentVersion").text(rsp.data.currentVersion + " (" + rsp.data.targetName + ")");
+                    }
                 }).catch(function(err) {
-                    console.error("OTA status poll failed:", err);
+                    $("#currentVersion").text("Unknown");
                 });
-            }
-
-            /* Update OTA UI based on status */
-            function updateOtaUI(data) {
-                /* Update current version */
-                $("#currentVersion").text(data.currentVersion + " (" + data.targetName + ")");
-
-                /* Update status badge */
-                var statusBadge = $("#otaStatus");
-                statusBadge.removeClass();
-
-                switch (data.state) {
-                    case "idle":
-                        statusBadge.addClass("badge bg-secondary").text("Idle");
-                        break;
-                    case "checking":
-                        statusBadge.addClass("badge bg-info").text("Checking...");
-                        break;
-                    case "ready":
-                        statusBadge.addClass("badge bg-success").text("Update Available");
-                        break;
-                    case "downloading":
-                        statusBadge.addClass("badge bg-warning text-dark").text("Downloading...");
-                        break;
-                    case "complete":
-                        statusBadge.addClass("badge bg-success").text("Complete - Restarting...");
-                        stopOtaPolling();
-                        setTimeout(function() {
-                            restClient.restart().then(function() {
-                                dialog.showInfo("<p>Update installed! Device is restarting...</p>").then(function() {
-                                    setTimeout(function() { location.reload(); }, 5000);
-                                });
-                            });
-                        }, 1000);
-                        break;
-                    case "error":
-                        statusBadge.addClass("badge bg-danger").text("Error");
-                        $("#otaError").text(data.error || "Unknown error").show();
-                        stopOtaPolling();
-                        break;
-                }
-
-                /* Update release info */
-                if (data.release) {
-                    var versionText = data.release.version;
-                    if (!data.release.hasMatchingBinary) {
-                        versionText += " (No binary for this target)";
-                    }
-                    $("#latestVersion").text(versionText);
-                    $("#latestVersionRow").show();
-
-                    if (data.release.notes) {
-                        $("#releaseNotes").text(data.release.notes);
-                        $("#releaseNotesRow").show();
-                    }
-                }
-
-                /* Update progress bar */
-                if (data.state === "downloading") {
-                    $("#otaProgressRow").show();
-                    updateProgressBar("progressBarOta", data.progress);
-                } else {
-                    $("#otaProgressRow").hide();
-                }
-
-                /* Update buttons */
-                updateOtaButtons(data.state, data.release ? data.release.hasMatchingBinary : false);
-            }
-
-            /* Update OTA buttons based on state */
-            function updateOtaButtons(state, hasMatchingBinary) {
-                var btnCheck = $("#btnCheckUpdates");
-                var btnStart = $("#btnStartUpdate");
-                var btnAbort = $("#btnAbortOta");
-
-                btnCheck.hide().prop("disabled", true);
-                btnStart.hide().prop("disabled", true);
-                btnAbort.hide().prop("disabled", true);
-
-                switch (state) {
-                    case "idle":
-                    case "error":
-                        btnCheck.show().prop("disabled", false);
-                        break;
-                    case "checking":
-                        btnAbort.show().prop("disabled", false);
-                        break;
-                    case "ready":
-                        btnCheck.show().prop("disabled", false);
-                        if (hasMatchingBinary) {
-                            btnStart.show().prop("disabled", false);
-                        }
-                        break;
-                    case "downloading":
-                        btnAbort.show().prop("disabled", false);
-                        break;
-                    case "complete":
-                        /* No buttons during completion */
-                        break;
-                }
-            }
-
-            /* Start OTA status polling */
-            function startOtaPolling() {
-                if (otaPollingInterval === null) {
-                    otaPollingInterval = setInterval(pollOtaStatus, 1000);
-                }
-            }
-
-            /* Stop OTA status polling */
-            function stopOtaPolling() {
-                if (otaPollingInterval !== null) {
-                    clearInterval(otaPollingInterval);
-                    otaPollingInterval = null;
-                }
             }
 
             /* Handle popup button yes pressed. Disables the HomeAssistant automatic discovery before requesting a change of acitve partitions. */
@@ -700,8 +516,8 @@
                 /* Check if factory partition is available before enabling updater button */
                 checkFactoryPartition();
 
-                /* Initial OTA status poll */
-                pollOtaStatus();
+                /* Fetch current version */
+                fetchCurrentVersion();
             });
         </script>
     </body>

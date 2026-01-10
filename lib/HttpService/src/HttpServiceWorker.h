@@ -63,10 +63,16 @@ class HttpServiceWorker : public Task<WorkerQueues>
 public:
 
     /**
+     * Stack size for HTTPS operations.
+     * SSL/TLS requires significant stack space for handshake operations.
+     */
+    static const uint32_t HTTPS_STACK_SIZE = 16384U;
+
+    /**
      * Constructs the HTTP service worker.
      */
     HttpServiceWorker() :
-        Task<WorkerQueues>("HttpServiceWorkerTask")
+        Task<WorkerQueues>("HttpServiceWorkerTask", HTTPS_STACK_SIZE)
     {
         ;
     }

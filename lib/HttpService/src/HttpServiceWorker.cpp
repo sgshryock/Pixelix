@@ -139,6 +139,7 @@ void HttpServiceWorker::performHttpRequest(const WorkerRequest& workerReq, Worke
         {
             wifiClient = secureClient;
             secureClient->setInsecure();
+            secureClient->setTimeout(15);  /* 15 second SSL handshake timeout */
         }
     }
     /* HTTP over plain TCP. */
@@ -156,6 +157,12 @@ void HttpServiceWorker::performHttpRequest(const WorkerRequest& workerReq, Worke
     {
         HTTPClient httpClient;
 
+        /* Set timeouts to avoid hanging connections */
+        httpClient.setConnectTimeout(10000);  /* 10 seconds connect timeout */
+        httpClient.setTimeout(30000);         /* 30 seconds read timeout */
+
+        LOG_INFO("HTTP: Starting request to %s", workerReq.url);
+
         if (false == httpClient.begin(*wifiClient, workerReq.url))
         {
             LOG_WARNING("HTTP request to URL %s failed, unable to connect.", workerReq.url);
@@ -165,10 +172,16 @@ void HttpServiceWorker::performHttpRequest(const WorkerRequest& workerReq, Worke
         {
             int httpClientRet = 0;
 
+            /* Set User-Agent header (required by some APIs like GitHub) */
+            httpClient.setUserAgent("Pixelix/1.0");
+
+            LOG_INFO("HTTP: Connected, sending request...");
+
             switch (workerReq.method)
             {
             case HTTP_METHOD_GET:
                 httpClientRet = httpClient.GET();
+                LOG_INFO("HTTP: GET returned %d", httpClientRet);
                 break;
 
             case HTTP_METHOD_POST:
@@ -206,6 +219,10 @@ void HttpServiceWorker::performHttpRequest(const WorkerRequest& workerReq, Worke
 
             httpClient.end();
         }
+
+        /* Clean up the WiFi client */
+        delete wifiClient;
+        wifiClient = nullptr;
     }
 }
 

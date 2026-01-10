@@ -197,6 +197,7 @@ HttpJobId HttpService::get(const char* url, IHttpResponseHandler* handler)
         request.handler = handler;
 
         m_requestList.push_back(request);
+        jobId = request.jobId;
     }
 
     return jobId;
@@ -219,6 +220,7 @@ HttpJobId HttpService::post(const char* url, const uint8_t* payload, size_t size
         request.handler = handler;
 
         m_requestList.push_back(request);
+        jobId = request.jobId;
     }
 
     return jobId;

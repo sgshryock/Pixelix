@@ -2,6 +2,9 @@
 
 ## Target Board
 - **Primary test board:** ESP32-S3 (`esp32-s3-devkitc-1-n16r8v-LED-32x8`)
+- **Device IP:** `192.168.0.121` (static)
+- **Web login:** `luke` / `skywalker`
+- **GitHub repo:** `https://github.com/sgshryock/Pixelix`
 
 ## Granted Permissions
 - Read/write files in this repository

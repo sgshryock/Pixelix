@@ -2382,8 +2382,11 @@ static void handleOtaStatus(AsyncWebServerRequest* request)
         case OtaState::RELEASE_INFO_READY:
             stateStr = "ready";
             break;
-        case OtaState::DOWNLOADING:
-            stateStr = "downloading";
+        case OtaState::DOWNLOADING_FIRMWARE:
+            stateStr = "downloading_firmware";
+            break;
+        case OtaState::DOWNLOADING_FILESYSTEM:
+            stateStr = "downloading_filesystem";
             break;
         case OtaState::DOWNLOAD_COMPLETE:
             stateStr = "complete";
@@ -2397,7 +2400,8 @@ static void handleOtaStatus(AsyncWebServerRequest* request)
         dataObj["state"] = stateStr;
 
         /* Progress (0-100) */
-        dataObj["progress"] = otaService.getDownloadProgress();
+        dataObj["firmwareProgress"]   = otaService.getDownloadProgress();
+        dataObj["filesystemProgress"] = otaService.getFilesystemProgress();
 
         /* Error message if any */
         if (OtaState::ERROR == state)
@@ -2407,7 +2411,8 @@ static void handleOtaStatus(AsyncWebServerRequest* request)
 
         /* Release info if available */
         if ((OtaState::RELEASE_INFO_READY == state) ||
-            (OtaState::DOWNLOADING == state) ||
+            (OtaState::DOWNLOADING_FIRMWARE == state) ||
+            (OtaState::DOWNLOADING_FILESYSTEM == state) ||
             (OtaState::DOWNLOAD_COMPLETE == state))
         {
             const ReleaseInfo& info    = otaService.getReleaseInfo();
@@ -2416,6 +2421,8 @@ static void handleOtaStatus(AsyncWebServerRequest* request)
             release["notes"]           = info.releaseNotes;
             release["hasMatchingBinary"] = info.hasMatchingBinary;
             release["firmwareSize"]    = info.firmwareSize;
+            release["hasFilesystem"]   = info.hasFilesystem;
+            release["filesystemSize"]  = info.filesystemSize;
         }
     }
 

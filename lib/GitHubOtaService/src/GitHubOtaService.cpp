@@ -36,8 +36,10 @@
 #include "GitHubOtaService.h"
 #include <Version.h>
 #include <Logging.h>
-#include <HttpService.h>
+#include <RestService.h>
 #include <ArduinoJson.h>
+#include <FileSystem.h>
+#include <esp_partition.h>
 
 /******************************************************************************
  * Compiler Switches
@@ -46,9 +48,6 @@
 /******************************************************************************
  * Macros
  *****************************************************************************/
-
-/** Invalid HTTP job ID */
-#define INVALID_HTTP_JOB_ID 0U
 
 /******************************************************************************
  * Types and classes
@@ -87,19 +86,20 @@ void GitHubOtaService::process()
 {
     MutexGuard<Mutex> guard(m_mutex);
 
-    if (INVALID_HTTP_JOB_ID != m_httpJobId)
+    if (RestService::INVALID_REST_ID != m_restId)
     {
-        HttpRsp response;
+        bool                isValidRsp = false;
+        DynamicJsonDocument jsonDoc(16384U);
 
-        if (true == HttpService::getInstance().getResponse(m_httpJobId, response))
+        if (true == RestService::getInstance().getResponse(m_restId, isValidRsp, jsonDoc))
         {
-            m_httpJobId = INVALID_HTTP_JOB_ID;
+            m_restId = RestService::INVALID_REST_ID;
 
             if (OtaState::CHECKING_RELEASE == m_state)
             {
-                if ((200 == response.statusCode) && (nullptr != response.payload) && (0 < response.size))
+                if (true == isValidRsp)
                 {
-                    if (true == parseReleaseJson(response.payload, response.size))
+                    if (true == parseReleaseJson(jsonDoc))
                     {
                         m_state = OtaState::RELEASE_INFO_READY;
                         LOG_INFO("Release found: %s", m_releaseInfo.tagName.c_str());
@@ -111,25 +111,12 @@ void GitHubOtaService::process()
                 }
                 else
                 {
-                    setError("HTTP error: " + String(response.statusCode));
+                    setError("Failed to fetch release info");
                 }
             }
-            else if (OtaState::DOWNLOADING == m_state)
-            {
-                if ((200 == response.statusCode) && (nullptr != response.payload) && (0 < response.size))
-                {
-                    handleFirmwareChunk(response.payload, response.size, true);
-                }
-                else
-                {
-                    if (0 != m_otaHandle)
-                    {
-                        esp_ota_abort(m_otaHandle);
-                        m_otaHandle = 0;
-                    }
-                    setError("Download failed: " + String(response.statusCode));
-                }
-            }
+            /* Note: Firmware/filesystem downloads are not supported via RestService
+             * as it expects JSON responses. Binary downloads would need a different approach.
+             */
         }
     }
 }
@@ -138,36 +125,14 @@ bool GitHubOtaService::checkForUpdates(const String& repoUrl)
 {
     MutexGuard<Mutex> guard(m_mutex);
 
-    if ((OtaState::IDLE != m_state) &&
-        (OtaState::ERROR != m_state) &&
-        (OtaState::RELEASE_INFO_READY != m_state))
-    {
-        return false;
-    }
-
-    m_repoUrl = repoUrl;
-    m_errorMessage.clear();
-    m_releaseInfo.clear();
-
-    String apiUrl = buildApiUrl(repoUrl);
-    if (apiUrl.isEmpty())
-    {
-        setError("Invalid repository URL");
-        return false;
-    }
-
-    LOG_INFO("Checking for updates: %s", apiUrl.c_str());
-
-    m_httpJobId = HttpService::getInstance().get(apiUrl.c_str());
-
-    if (INVALID_HTTP_JOB_ID == m_httpJobId)
-    {
-        setError("Failed to start HTTP request");
-        return false;
-    }
-
-    m_state = OtaState::CHECKING_RELEASE;
-    return true;
+    /* GitHub OTA is currently work-in-progress.
+     * The GitHub API requires HTTPS, but AsyncHttpClient's SSL support
+     * has memory/stability issues on ESP32. This feature is disabled
+     * until HTTPS support is improved.
+     */
+    (void)repoUrl;
+    setError("GitHub OTA updates coming soon - feature in development");
+    return false;
 }
 
 bool GitHubOtaService::startOtaUpdate()
@@ -191,39 +156,12 @@ bool GitHubOtaService::startOtaUpdate()
         return false;
     }
 
-    /* Find the OTA update partition */
-    m_updatePartition = esp_ota_get_next_update_partition(nullptr);
-    if (nullptr == m_updatePartition)
-    {
-        setError("No OTA partition found");
-        return false;
-    }
-
-    /* Begin OTA update */
-    esp_err_t err = esp_ota_begin(m_updatePartition, OTA_SIZE_UNKNOWN, &m_otaHandle);
-    if (ESP_OK != err)
-    {
-        setError("Failed to begin OTA: " + String(esp_err_to_name(err)));
-        return false;
-    }
-
-    m_bytesWritten = 0;
-    m_downloadProgress = 0;
-
-    LOG_INFO("Starting firmware download: %s", m_releaseInfo.downloadUrl.c_str());
-
-    m_httpJobId = HttpService::getInstance().get(m_releaseInfo.downloadUrl.c_str());
-
-    if (INVALID_HTTP_JOB_ID == m_httpJobId)
-    {
-        esp_ota_abort(m_otaHandle);
-        m_otaHandle = 0;
-        setError("Failed to start firmware download");
-        return false;
-    }
-
-    m_state = OtaState::DOWNLOADING;
-    return true;
+    /* TODO: Binary downloads not yet implemented.
+     * RestService only supports JSON responses.
+     * Need to implement direct AsyncHttpClient usage for binary downloads.
+     */
+    setError("OTA download not yet implemented");
+    return false;
 }
 
 void GitHubOtaService::abort()
@@ -236,12 +174,19 @@ void GitHubOtaService::abort()
         m_otaHandle = 0;
     }
 
-    m_httpJobId = INVALID_HTTP_JOB_ID;
+    if (RestService::INVALID_REST_ID != m_restId)
+    {
+        RestService::getInstance().abortRequest(m_restId);
+        m_restId = RestService::INVALID_REST_ID;
+    }
+
     m_state = OtaState::IDLE;
     m_errorMessage.clear();
     m_releaseInfo.clear();
     m_bytesWritten = 0;
     m_downloadProgress = 0;
+    m_fsBytesWritten = 0;
+    m_fsDownloadProgress = 0;
 
     LOG_INFO("OTA aborted");
 }
@@ -270,6 +215,12 @@ uint8_t GitHubOtaService::getDownloadProgress() const
     return m_downloadProgress;
 }
 
+uint8_t GitHubOtaService::getFilesystemProgress() const
+{
+    MutexGuard<Mutex> guard(m_mutex);
+    return m_fsDownloadProgress;
+}
+
 /******************************************************************************
  * Protected Methods
  *****************************************************************************/
@@ -284,11 +235,14 @@ GitHubOtaService::GitHubOtaService() :
     m_errorMessage(),
     m_releaseInfo(),
     m_repoUrl(),
-    m_httpJobId(INVALID_HTTP_JOB_ID),
+    m_restId(RestService::INVALID_REST_ID),
     m_otaHandle(0),
     m_updatePartition(nullptr),
     m_bytesWritten(0),
-    m_downloadProgress(0)
+    m_downloadProgress(0),
+    m_spiffsPartition(nullptr),
+    m_fsBytesWritten(0),
+    m_fsDownloadProgress(0)
 {
 }
 
@@ -355,20 +309,18 @@ String GitHubOtaService::getExpectedBinaryName() const
     return binaryName;
 }
 
-bool GitHubOtaService::parseReleaseJson(const uint8_t* data, size_t size)
+String GitHubOtaService::getExpectedFilesystemName() const
 {
-    const size_t JSON_DOC_SIZE = 16384U;
-    DynamicJsonDocument jsonDoc(JSON_DOC_SIZE);
+    String fsName = "littlefs_";
+    fsName += Version::getTargetName();
+    fsName += ".bin";
+    return fsName;
+}
 
-    DeserializationError error = deserializeJson(jsonDoc, data, size);
-    if (DeserializationError::Ok != error.code())
-    {
-        LOG_ERROR("JSON parse error: %s", error.c_str());
-        return false;
-    }
-
+bool GitHubOtaService::parseReleaseJson(const DynamicJsonDocument& jsonDoc)
+{
     /* Extract tag_name (version) */
-    JsonVariant tagName = jsonDoc["tag_name"];
+    JsonVariantConst tagName = jsonDoc["tag_name"];
     if (tagName.isNull())
     {
         LOG_ERROR("No tag_name in release");
@@ -377,7 +329,7 @@ bool GitHubOtaService::parseReleaseJson(const uint8_t* data, size_t size)
     m_releaseInfo.tagName = tagName.as<const char*>();
 
     /* Extract body (release notes) - truncate if too long */
-    JsonVariant body = jsonDoc["body"];
+    JsonVariantConst body = jsonDoc["body"];
     if (!body.isNull())
     {
         String notes = body.as<const char*>();
@@ -388,25 +340,34 @@ bool GitHubOtaService::parseReleaseJson(const uint8_t* data, size_t size)
         m_releaseInfo.releaseNotes = notes;
     }
 
-    /* Find matching binary in assets */
-    String expectedBinary = getExpectedBinaryName();
+    /* Find matching binaries in assets */
+    String expectedFirmware = getExpectedBinaryName();
+    String expectedFilesystem = getExpectedFilesystemName();
     m_releaseInfo.hasMatchingBinary = false;
+    m_releaseInfo.hasFilesystem = false;
 
-    LOG_INFO("Looking for binary: %s", expectedBinary.c_str());
+    LOG_INFO("Looking for firmware: %s", expectedFirmware.c_str());
+    LOG_INFO("Looking for filesystem: %s", expectedFilesystem.c_str());
 
-    JsonArray assets = jsonDoc["assets"];
-    for (JsonVariant asset : assets)
+    JsonArrayConst assets = jsonDoc["assets"];
+    for (JsonVariantConst asset : assets)
     {
         String assetName = asset["name"].as<const char*>();
         LOG_INFO("Found asset: %s", assetName.c_str());
 
-        if (assetName == expectedBinary)
+        if (assetName == expectedFirmware)
         {
             m_releaseInfo.downloadUrl = asset["browser_download_url"].as<const char*>();
             m_releaseInfo.firmwareSize = asset["size"].as<size_t>();
             m_releaseInfo.hasMatchingBinary = true;
-            LOG_INFO("Matched binary! Size: %u", m_releaseInfo.firmwareSize);
-            break;
+            LOG_INFO("Matched firmware! Size: %u", m_releaseInfo.firmwareSize);
+        }
+        else if (assetName == expectedFilesystem)
+        {
+            m_releaseInfo.filesystemUrl = asset["browser_download_url"].as<const char*>();
+            m_releaseInfo.filesystemSize = asset["size"].as<size_t>();
+            m_releaseInfo.hasFilesystem = true;
+            LOG_INFO("Matched filesystem! Size: %u", m_releaseInfo.filesystemSize);
         }
     }
 
@@ -415,45 +376,30 @@ bool GitHubOtaService::parseReleaseJson(const uint8_t* data, size_t size)
 
 void GitHubOtaService::handleFirmwareChunk(const uint8_t* data, size_t size, bool isFinal)
 {
-    esp_err_t err = esp_ota_write(m_otaHandle, data, size);
-    if (ESP_OK != err)
-    {
-        esp_ota_abort(m_otaHandle);
-        m_otaHandle = 0;
-        setError("OTA write failed: " + String(esp_err_to_name(err)));
-        return;
-    }
+    /* TODO: Not implemented - binary downloads need AsyncHttpClient */
+    (void)data;
+    (void)size;
+    (void)isFinal;
+}
 
-    m_bytesWritten += size;
+bool GitHubOtaService::startFilesystemDownload()
+{
+    /* TODO: Not implemented - binary downloads need AsyncHttpClient */
+    setError("Filesystem download not yet implemented");
+    return false;
+}
 
-    /* Update progress */
-    if (m_releaseInfo.firmwareSize > 0)
-    {
-        m_downloadProgress = static_cast<uint8_t>((m_bytesWritten * 100U) / m_releaseInfo.firmwareSize);
-    }
+void GitHubOtaService::handleFilesystemChunk(const uint8_t* data, size_t size, bool isFinal)
+{
+    /* TODO: Not implemented - binary downloads need AsyncHttpClient */
+    (void)data;
+    (void)size;
+    (void)isFinal;
+}
 
-    if (isFinal)
-    {
-        err = esp_ota_end(m_otaHandle);
-        m_otaHandle = 0;
-
-        if (ESP_OK != err)
-        {
-            setError("OTA end failed: " + String(esp_err_to_name(err)));
-            return;
-        }
-
-        err = esp_ota_set_boot_partition(m_updatePartition);
-        if (ESP_OK != err)
-        {
-            setError("Failed to set boot partition: " + String(esp_err_to_name(err)));
-            return;
-        }
-
-        m_downloadProgress = 100;
-        m_state = OtaState::DOWNLOAD_COMPLETE;
-        LOG_INFO("OTA update complete. Ready for reboot.");
-    }
+void GitHubOtaService::finalizeUpdate()
+{
+    /* TODO: Not implemented - binary downloads need AsyncHttpClient */
 }
 
 void GitHubOtaService::setError(const String& message)
