@@ -104,7 +104,8 @@
                                 <div class="alert alert-warning py-2 small mb-2" role="alert">
                                     <strong>Warning:</strong> Filesystem updates erase configuration. Create a backup first!
                                 </div>
-                                <button class="btn btn-primary btn-sm" type="button" onclick="goToPixelixUpdaterPressed()" disabled>Go to Pixelix Updater</button>
+                                <button class="btn btn-primary btn-sm" id="btnPixelixUpdater" type="button" onclick="goToPixelixUpdaterPressed()" disabled>Go to Pixelix Updater</button>
+                                <span id="updaterNotAvailable" class="text-warning small ms-2" style="display: none;">Factory partition not found</span>
                             </div>
                         </div>
 
@@ -209,9 +210,9 @@
                 $("main :button").prop("disabled", true);
             }
 
-            /* Enable all UI elements. */
+            /* Enable all UI elements (except updater button which is controlled separately). */
             function enableUI() {
-                $("main :button").prop("disabled", false);
+                $("main :button").not("#btnPixelixUpdater").prop("disabled", false);
             }
 
             function updateProgressBar(id, progress) {
@@ -653,6 +654,27 @@
                 });
             }
 
+            /* Check if factory partition is available */
+            function checkFactoryPartition() {
+                utils.makeRequest({
+                    method: "GET",
+                    url: "/rest/api/v1/partitionStatus",
+                    isJsonResponse: true
+                }).then(function(rsp) {
+                    if (rsp.data && rsp.data.factoryPartitionAvailable === true) {
+                        $("#btnPixelixUpdater").prop("disabled", false);
+                        $("#updaterNotAvailable").hide();
+                    } else {
+                        $("#btnPixelixUpdater").prop("disabled", true);
+                        $("#updaterNotAvailable").show();
+                    }
+                }).catch(function(err) {
+                    console.error("Failed to check partition status:", err);
+                    $("#btnPixelixUpdater").prop("disabled", true);
+                    $("#updaterNotAvailable").text("Unable to check partition status").show();
+                });
+            }
+
             /* Execute after page is ready. */
             $(document).ready(function() {
                 menu.addSubMenu(menu.data, "Plugins", pluginSubMenu);
@@ -674,6 +696,9 @@
                 });
 
                 enableUI();
+
+                /* Check if factory partition is available before enabling updater button */
+                checkFactoryPartition();
 
                 /* Initial OTA status poll */
                 pollOtaStatus();

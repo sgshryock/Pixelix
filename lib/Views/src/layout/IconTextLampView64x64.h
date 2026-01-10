@@ -157,9 +157,17 @@ public:
      */
     void update(YAGfx& gfx) override
     {
+        uint8_t idx = 0U;
+
         gfx.fillScreen(ColorDef::BLACK);
         m_bitmapWidget.update(gfx);
         m_textWidget.update(gfx);
+
+        while (MAX_LAMPS > idx)
+        {
+            m_lampWidgets[idx].update(gfx);
+            ++idx;
+        }
     }
 
     /**

@@ -19,6 +19,7 @@
   - [Use VSCode and Platformio](#use-vscode-and-platformio)
 - [Update via USB](#update-via-usb)
 - [Use the browser](#use-the-browser)
+- [Factory Partition (Pixelix Updater)](#factory-partition-pixelix-updater)
 - [Flash Layout Information](#flash-layout-information)
   - [esp32 / esp32-s2](#esp32--esp32-s2)
   - [esp32-s3](#esp32-s3)
@@ -148,6 +149,39 @@ Steps:
 5. Open the "Update" submenu of the webinterface.
 6. Go to Pixelix Updater.
 7. Select firmware binary (```firmware.bin```) or filesystem binary (```spiffs.bin```/```littlefs.bin```) and click on the respective upload button.
+
+## Factory Partition (Pixelix Updater)
+
+The factory partition contains the **Pixelix Updater** firmware, which is a minimal firmware that allows you to update the main firmware and filesystem via the web browser without needing a USB connection.
+
+### Why is the factory partition important?
+
+The "Go to Pixelix Updater" button on the Update page switches the device to boot from the factory partition. This is necessary for filesystem updates because the main firmware cannot update its own filesystem while running.
+
+### When is the factory partition NOT present?
+
+The factory partition may be missing if:
+- The device was only ever updated via OTA (OTA updates cannot flash the factory partition)
+- The device was manually flashed without including the factory binary
+- An older firmware version was used that didn't include the factory partition
+
+### How to check if the factory partition is present
+
+On the Update page, if the factory partition is missing, the "Go to Pixelix Updater" button will be **disabled** and show the message "Factory partition not found".
+
+### How to fix a missing factory partition
+
+A missing factory partition requires a **one-time serial flash** to fix. This cannot be done via OTA.
+
+Using PlatformIO:
+```bash
+pio run -e <your-board-environment> -t upload
+pio run -e <your-board-environment> -t uploadfs
+```
+
+The `upload` target automatically includes the factory binary (from `factory_binaries/`) along with the main firmware, bootloader, and partition table.
+
+After this serial flash, future updates can be done via the browser using the Pixelix Updater.
 
 ## Flash Layout Information
 

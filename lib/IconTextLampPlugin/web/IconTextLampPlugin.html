@@ -61,11 +61,11 @@
                         <div class="card mb-3">
                             <div class="card-header py-2">Text Configuration</div>
                             <div class="card-body py-2">
-                                <form id="myFormText" action="javascript:setText(pluginUidText.options[pluginUidText.selectedIndex].value, justText.value, iconFileId.value, storeFlag.checked)">
+                                <form id="myFormText" action="javascript:setText(pluginUidText.options[pluginUidText.selectedIndex].value, justText.value, iconFileId.value)">
                                     <div class="row">
                                         <div class="col-md-6 mb-2">
                                             <label class="form-label small" for="pluginUidText">Plugin UID</label>
-                                            <select class="form-select form-select-sm" id="pluginUidText" name="pluginUid" onChange="getText(pluginUidText.options[pluginUidText.selectedIndex].value, 'justText', 'iconFileId', 'storeFlag')">
+                                            <select class="form-select form-select-sm" id="pluginUidText" name="pluginUid" onChange="onPluginUidChange()">
                                             </select>
                                         </div>
                                         <div class="col-md-6 mb-2">
@@ -79,14 +79,6 @@
                                             <input class="form-control form-control-sm" type="text" id="justText" name="justText" value="" />
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-12 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="storeFlag" name="storeFlag" value="0" />
-                                                <label class="form-check-label small" for="storeFlag">Store persistent (used after restart)</label>
-                                            </div>
-                                        </div>
-                                    </div>
                                     <button class="btn btn-primary btn-sm" type="submit">Update</button>
                                 </form>
                             </div>
@@ -94,32 +86,15 @@
                         <div class="card mb-3">
                             <div class="card-header py-2">Lamp Configuration</div>
                             <div class="card-body py-2">
-                                <form id="myFormLamp" action="javascript:setLamp(pluginUidLamp.options[pluginUidLamp.selectedIndex].value, lampId.options[lampId.selectedIndex].value, lampState.options[lampState.selectedIndex].value)">
-                                    <div class="row">
-                                        <div class="col-md-4 mb-2">
-                                            <label class="form-label small" for="pluginUidLamp">Plugin UID</label>
-                                            <select class="form-select form-select-sm" id="pluginUidLamp" name="pluginUid">
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4 mb-2">
-                                            <label class="form-label small" for="lampId">Lamp</label>
-                                            <select class="form-select form-select-sm" id="lampId" onChange="getLamp(pluginUidText.options[pluginUidText.selectedIndex].value, lampId.options[lampId.selectedIndex].value, 'lampState')">
-                                                <option value="0" selected>0</option>
-                                                <option value="1">1</option>
-                                                <option value="2">2</option>
-                                                <option value="3">3</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4 mb-2">
-                                            <label class="form-label small" for="lampState">State</label>
-                                            <select class="form-select form-select-sm" id="lampState">
-                                                <option value="off" selected>off</option>
-                                                <option value="on">on</option>
-                                            </select>
-                                        </div>
+                                <div id="lampToggles">
+                                    <label class="form-label small">Click to toggle lamps on/off</label>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-sm lamp-btn" id="lamp0" data-lamp-id="0" onclick="toggleLamp(0)">Lamp 0</button>
+                                        <button type="button" class="btn btn-sm lamp-btn" id="lamp1" data-lamp-id="1" onclick="toggleLamp(1)">Lamp 1</button>
+                                        <button type="button" class="btn btn-sm lamp-btn" id="lamp2" data-lamp-id="2" onclick="toggleLamp(2)">Lamp 2</button>
+                                        <button type="button" class="btn btn-sm lamp-btn" id="lamp3" data-lamp-id="3" onclick="toggleLamp(3)">Lamp 3</button>
                                     </div>
-                                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
-                                </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -152,15 +127,74 @@
 
             var pluginName  = "IconTextLampPlugin";
             var restClient  = new pixelix.rest.Client();
+            var lampStates  = [false, false, false, false];
 
             function enableUI() {
                 utils.enableForm("myFormText", true);
-                utils.enableForm("myFormLamp", true);
+                setLampButtonsEnabled(true);
             }
 
             function disableUI() {
                 utils.enableForm("myFormText", false);
-                utils.enableForm("myFormLamp", false);
+                setLampButtonsEnabled(false);
+            }
+
+            function setLampButtonsEnabled(enabled) {
+                for (var i = 0; i < 4; i++) {
+                    document.getElementById("lamp" + i).disabled = !enabled;
+                }
+            }
+
+            function updateLampButton(lampId) {
+                var btn = document.getElementById("lamp" + lampId);
+                if (lampStates[lampId]) {
+                    btn.classList.remove("btn-secondary");
+                    btn.classList.add("btn-danger");
+                } else {
+                    btn.classList.remove("btn-danger");
+                    btn.classList.add("btn-secondary");
+                }
+            }
+
+            function toggleLamp(lampId) {
+                var selectText = document.getElementById("pluginUidText");
+                if (selectText.selectedIndex < 0) return;
+
+                var pluginUid = selectText.options[selectText.selectedIndex].value;
+                var newState = !lampStates[lampId];
+
+                setLampButtonsEnabled(false);
+
+                utils.makeRequest({
+                    method: "POST",
+                    url: "/rest/api/v1/display/uid/" + pluginUid + "/lamp/" + lampId,
+                    isJsonResponse: true,
+                    parameter: {
+                        state: newState ? "on" : "off"
+                    }
+                }).then(function(rsp) {
+                    lampStates[lampId] = newState;
+                    updateLampButton(lampId);
+                }).catch(function(rsp) {
+                    alert("Failed to toggle lamp.");
+                }).finally(function() {
+                    setLampButtonsEnabled(true);
+                });
+            }
+
+            function getAllLamps(pluginUid) {
+                return utils.makeRequest({
+                    method: "GET",
+                    url: "/rest/api/v1/display/uid/" + pluginUid + "/lamps",
+                    isJsonResponse: true
+                }).then(function(rsp) {
+                    for (var i = 0; i < rsp.data.lamps.length && i < 4; i++) {
+                        lampStates[i] = (rsp.data.lamps[i].state === "on");
+                        updateLampButton(i);
+                    }
+                }).catch(function(rsp) {
+                    console.error("Failed to get lamp states.");
+                });
             }
 
             function getPluginInstances() {
@@ -206,7 +240,7 @@
                 });
             };
 
-            function getText(pluginUid, justTextId, iconFileId, storeFlagId) {
+            function getText(pluginUid, justTextId, iconFileIdId) {
                 disableUI();
                 return utils.makeRequest({
                     method: "GET",
@@ -214,12 +248,10 @@
                     isJsonResponse: true
                 }).then(function(rsp) {
                     var justTextInput = document.getElementById(justTextId);
-                    var iconFileIdInput = document.getElementById(iconFileId);
-                    var storeFlagIdInput = document.getElementById(storeFlagId);
+                    var iconFileIdInput = document.getElementById(iconFileIdId);
 
                     justTextInput.value = rsp.data.text.replaceAll("\n", "\\n");
                     iconFileIdInput.value = rsp.data.iconFileId;
-                    storeFlagIdInput.checked = false;
 
                 }).catch(function(rsp) {
                     alert("Internal error.");
@@ -228,7 +260,7 @@
                 });
             }
 
-            function setText(pluginUid, justText, iconFileId, storeFlag) {
+            function setText(pluginUid, justText, iconFileId) {
                 disableUI();
 
                 justText = justText.replaceAll("\\n", "\n");
@@ -241,48 +273,7 @@
                     parameter: {
                         text: justText,
                         iconFileId: parseInt(iconFileId),
-                        storeFlag: storeFlag
-                    }
-                }).then(function(rsp) {
-                    alert("Ok.");
-                }).catch(function(rsp) {
-                    alert("Failed.");
-                }).finally(function() {
-                    enableUI();
-                });
-            }
-
-            function getLamp(pluginUid, lampId, lampStateId) {
-                disableUI();
-                return utils.makeRequest({
-                    method: "GET",
-                    url: "/rest/api/v1/display/uid/" + pluginUid + "/lamps",
-                    isJsonResponse: true
-                }).then(function(rsp) {
-                    var selectLampState = document.getElementById(lampStateId);
-
-                    if ("off" == rsp.data.lamps[lampId].state) {
-                        selectLampState.selectedIndex = 0;
-                    } else {
-                        selectLampState.selectedIndex = 1;
-                    }
-
-                }).catch(function(rsp) {
-                    alert("Internal error.");
-                }).finally(function() {
-                    enableUI();
-                });
-            }
-
-            function setLamp(pluginUid, lampId, lampState) {
-                disableUI();
-
-                return utils.makeRequest({
-                    method: "POST",
-                    url: "/rest/api/v1/display/uid/" + pluginUid + "/lamp/" + lampId,
-                    isJsonResponse: true,
-                    parameter: {
-                        state: lampState
+                        storeFlag: true
                     }
                 }).then(function(rsp) {
                     alert("Ok.");
@@ -301,10 +292,18 @@
                     return getText(
                         selectText.options[selectText.selectedIndex].value,
                         "justText",
-                        "iconFileId",
-                        "storeFlag"
+                        "iconFileId"
                     );
                 }
+            }
+
+            function onPluginUidChange() {
+                var selectText = document.getElementById("pluginUidText");
+                if (selectText.selectedIndex < 0) return;
+
+                var pluginUid = selectText.options[selectText.selectedIndex].value;
+                getText(pluginUid, "justText", "iconFileId");
+                getAllLamps(pluginUid);
             }
 
             $(document).ready(function() {
@@ -312,23 +311,21 @@
                 menu.addSubMenu(menu.data, "Services", serviceSubMenu);
                 menu.create("menu", menu.data);
 
+                /* Initialize lamp buttons to off state */
+                for (var i = 0; i < 4; i++) {
+                    updateLampButton(i);
+                }
+
                 /* Disable all forms, until the plugin instances are loaded. */
                 disableUI();
 
                 /* Load all plugin instances. */
                 getPluginInstances().then(function(cnt) {
-                    var selectText      = document.getElementById("pluginUidText");
-                    var selectLamp      = document.getElementById("pluginUidLamp");
-                    var selectLampId    = document.getElementById("lampId");
+                    var selectText = document.getElementById("pluginUidText");
 
                     if (0 < cnt) {
-
                         return updateForms().then(function() {
-                            return getLamp(
-                                selectLamp.options[selectLamp.selectedIndex].value,
-                                selectLampId.options[selectLampId.selectedIndex].value,
-                                "lampState"
-                            );
+                            return getAllLamps(selectText.options[selectText.selectedIndex].value);
                         });
                     }
                 });

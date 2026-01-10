@@ -132,6 +132,16 @@ RestartMgr::RestartReqStatus RestartMgr::reqShutdown(uint32_t delay)
     return status;
 }
 
+bool RestartMgr::isFactoryPartitionAvailable() const
+{
+    const esp_partition_t* partition = esp_partition_find_first(
+        esp_partition_type_t::ESP_PARTITION_TYPE_APP,
+        esp_partition_subtype_t::ESP_PARTITION_SUBTYPE_APP_FACTORY,
+        nullptr);
+
+    return (nullptr != partition);
+}
+
 /******************************************************************************
  * Protected Methods
  *****************************************************************************/

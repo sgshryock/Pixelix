@@ -151,6 +151,13 @@ public:
      */
     RestartReqStatus reqShutdown(uint32_t delay);
 
+    /**
+     * Check if the factory partition is available.
+     *
+     * @return true if factory partition exists, false otherwise.
+     */
+    bool isFactoryPartitionAvailable() const;
+
 private:
 
     /** Restart requested? */

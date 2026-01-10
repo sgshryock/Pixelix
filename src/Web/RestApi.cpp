@@ -111,6 +111,7 @@ static void                         uploadHandler(AsyncWebServerRequest* request
 static void                         handleFileDelete(AsyncWebServerRequest* request);
 static bool                         isValidHostname(const String& hostname);
 static void                         handlePartitionChange(AsyncWebServerRequest* request);
+static void                         handlePartitionStatus(AsyncWebServerRequest* request);
 static void                         handleShutdown(AsyncWebServerRequest* request);
 static HomeAssistantDiscoveryStatus disableHomeAssistantAutomaticDiscovery();
 static void                         handleHomeAssistantAutomaticDiscoveryDisable(AsyncWebServerRequest* request);
@@ -201,6 +202,8 @@ void RestApi::init(AsyncWebServer& srv)
     (void)srv.on("/rest/api/v1/fs", handleFilesystem)
         .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
     (void)srv.on("/rest/api/v1/partitionChange", HTTP_POST, handlePartitionChange)
+        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+    (void)srv.on("/rest/api/v1/partitionStatus", HTTP_GET, handlePartitionStatus)
         .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
     (void)srv.on("/rest/api/v1/shutdown", HTTP_POST, handleShutdown)
         .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
@@ -1997,6 +2000,42 @@ static void handlePartitionChange(AsyncWebServerRequest* request)
         default:
             break;
         }
+    }
+
+    RestUtil::sendJsonRsp(request, jsonDoc, httpStatusCode);
+}
+
+/**
+ * Handle partition status request.
+ * Returns whether the factory partition is available.
+ *
+ * @param[in] request   HTTP request
+ */
+static void handlePartitionStatus(AsyncWebServerRequest* request)
+{
+    uint32_t            httpStatusCode = HttpStatus::STATUS_CODE_OK;
+    const size_t        JSON_DOC_SIZE  = 512U;
+    DynamicJsonDocument jsonDoc(JSON_DOC_SIZE);
+
+    if (nullptr == request)
+    {
+        return;
+    }
+
+    if (HTTP_GET != request->method())
+    {
+        RestUtil::prepareRspErrorHttpMethodNotSupported(jsonDoc);
+        httpStatusCode = HttpStatus::STATUS_CODE_NOT_FOUND;
+    }
+    else
+    {
+        RestartMgr& restartMgr              = RestartMgr::getInstance();
+        bool        isFactoryAvailable      = restartMgr.isFactoryPartitionAvailable();
+        JsonObject  dataObj                 = jsonDoc.createNestedObject("data");
+
+        dataObj["factoryPartitionAvailable"] = isFactoryAvailable;
+
+        (void)RestUtil::prepareRspSuccess(jsonDoc);
     }
 
     RestUtil::sendJsonRsp(request, jsonDoc, httpStatusCode);
