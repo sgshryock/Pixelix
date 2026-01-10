@@ -343,6 +343,26 @@ void InitState::process(StateMachine& sm)
     {
         m_timer.stop();
 
+        /* Auto-start AP mode if no WiFi credentials are configured. */
+        if (false == m_isApModeRequested)
+        {
+            SettingsService& settings = SettingsService::getInstance();
+
+            if (true == settings.open(true))
+            {
+                String wifiSSID       = settings.getWifiSSID().getValue();
+                String wifiPassphrase = settings.getWifiPassphrase().getValue();
+
+                settings.close();
+
+                if ((0 == wifiSSID.length()) || (0 == wifiPassphrase.length()))
+                {
+                    LOG_INFO("No WiFi credentials configured. Auto-starting AP mode.");
+                    m_isApModeRequested = true;
+                }
+            }
+        }
+
         if (false == m_isApModeRequested)
         {
             sm.setState(ConnectingState::getInstance());
