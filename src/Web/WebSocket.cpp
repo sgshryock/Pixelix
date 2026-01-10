@@ -53,7 +53,6 @@
 
 #include <Logging.h>
 #include <Util.h>
-#include <SettingsService.h>
 
 /******************************************************************************
  * Compiler Switches
@@ -153,23 +152,6 @@ void WebSocketSrv::init(AsyncWebServer& srv)
 {
     if (false == m_isInitialized)
     {
-        String           webLoginUser;
-        String           webLoginPassword;
-        SettingsService& settings = SettingsService::getInstance();
-
-        if (false == settings.open(true))
-        {
-            webLoginUser     = settings.getWebLoginUser().getDefault();
-            webLoginPassword = settings.getWebLoginPassword().getDefault();
-        }
-        else
-        {
-            webLoginUser     = settings.getWebLoginUser().getValue();
-            webLoginPassword = settings.getWebLoginPassword().getValue();
-
-            settings.close();
-        }
-
         /* Setup the websocket message input queue. */
         (void)m_msgQueue.create(MAX_WEBSOCKET_MSGS);
 
@@ -179,8 +161,11 @@ void WebSocketSrv::init(AsyncWebServer& srv)
                 this->onEvent(server, client, type, arg, data, len);
             });
 
-        /* HTTP Authenticate before switch to Websocket protocol */
-        m_webSocket.setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        /* Note: WebSocket authentication is not enabled because mobile browsers
+         * (especially Safari on iOS) don't send cached Basic Auth credentials
+         * for WebSocket upgrade requests. Since the HTML pages are protected,
+         * only authenticated users can access the display page anyway.
+         */
 
         /* Register websocket on webserver */
         srv.addHandler(&m_webSocket);
