@@ -47,10 +47,19 @@ pio run -e esp32-s3-devkitc-1-n16r8v-LED-32x8
 | 0x00c90000 | Filesystem (LittleFS)|
 
 ## AP Mode / Captive Portal
-To enter AP mode for WiFi configuration:
+
+### Automatic AP Mode
+The device **automatically starts in AP mode** when no WiFi credentials are configured (e.g., after a fresh flash). No button press required.
+
+### Manual AP Mode
+To force AP mode when WiFi credentials are already configured:
 - Hold **GPIO 4** to GND during boot
-- Connect to the `pixelix-XXXXXXXX` WiFi network
-- The captive portal will appear for WiFi configuration
+
+### Connecting
+1. Connect to the `pixelix-XXXXXXXX` WiFi network
+2. The captive portal will appear for WiFi configuration
+3. Enter your WiFi SSID and passphrase
+4. Click "Restart" to connect to your network
 
 ## Troubleshooting
 
