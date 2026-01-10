@@ -87,7 +87,7 @@ public:
     OpenWeatherPlugin(const char* name, uint16_t uid) :
         PluginWithConfig(name, uid, FILESYSTEM),
         m_view(),
-        m_sourceId(OPENWEATHER_SOURCE_ONE_CALL_30),
+        m_sourceId(OPENWEATHER_SOURCE_CURRENT_FORECAST),  /* Use free API by default */
         m_updatePeriod(UPDATE_PERIOD),
         m_sourceCurrent(nullptr),
         m_sourceForecast(nullptr),
