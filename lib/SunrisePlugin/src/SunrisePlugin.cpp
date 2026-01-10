@@ -440,22 +440,71 @@ void SunrisePlugin::handleWebResponse(const DynamicJsonDocument& jsonDoc)
 
 String SunrisePlugin::addCurrentTimeZoneValues(const String& dateTimeString) const
 {
-    tm        gmTimeInfo;
+    tm        utcTimeInfo;
     const tm* lcTimeInfo = nullptr;
-    time_t    gmTime;
+    time_t    utcTime;
     char      timeBuffer[17] = { 0 };
 
-    /* Example: "2015-05-21T05:05:35+00:00" */
+    /* Initialize struct to avoid undefined behavior from uninitialized fields */
+    memset(&utcTimeInfo, 0, sizeof(utcTimeInfo));
 
-    /* Convert date/time string to GMT time information */
-    (void)strptime(dateTimeString.c_str(), "%Y-%m-%dT%H:%M:%S", &gmTimeInfo);
+    /* Parse UTC time string from API response.
+     * Example: "2015-05-21T05:05:35+00:00"
+     * The API returns times in UTC (indicated by +00:00).
+     */
+    (void)strptime(dateTimeString.c_str(), "%Y-%m-%dT%H:%M:%S", &utcTimeInfo);
 
-    /* Convert to local time */
-    gmTime     = mktime(&gmTimeInfo);
-    lcTimeInfo = localtime(&gmTime);
+    /* No DST in UTC */
+    utcTimeInfo.tm_isdst = 0;
 
-    /* Convert time information to user friendly string. */
-    (void)strftime(timeBuffer, sizeof(timeBuffer), m_timeFormat.c_str(), lcTimeInfo);
+    /* Convert UTC struct tm to time_t (seconds since Unix epoch).
+     * Since timegm() is not available and setenv() conflicts with ClockDrv's
+     * memory management, we calculate the UTC time_t manually.
+     *
+     * Formula: Calculate seconds since 1970-01-01 00:00:00 UTC
+     */
+    {
+        /* Days from year 1970 to the given year */
+        int      year       = utcTimeInfo.tm_year + 1900;
+        int      days       = 0;
+
+        for (int y = 1970; y < year; y++)
+        {
+            bool isLeap = ((y % 4 == 0) && (y % 100 != 0)) || (y % 400 == 0);
+            days += isLeap ? 366 : 365;
+        }
+
+        /* Days from months in current year */
+        static const int daysInMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+        bool isLeapYear = ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0);
+
+        for (int m = 0; m < utcTimeInfo.tm_mon; m++)
+        {
+            days += daysInMonth[m];
+            if ((m == 1) && isLeapYear)
+            {
+                days += 1; /* February in leap year */
+            }
+        }
+
+        /* Add days in current month (tm_mday is 1-based) */
+        days += utcTimeInfo.tm_mday - 1;
+
+        /* Convert to seconds and add time of day */
+        utcTime = (time_t)days * 86400 +
+                  (time_t)utcTimeInfo.tm_hour * 3600 +
+                  (time_t)utcTimeInfo.tm_min * 60 +
+                  (time_t)utcTimeInfo.tm_sec;
+    }
+
+    /* Convert UTC time_t to local time using system timezone */
+    lcTimeInfo = localtime(&utcTime);
+
+    if (nullptr != lcTimeInfo)
+    {
+        /* Format time for display */
+        (void)strftime(timeBuffer, sizeof(timeBuffer), m_timeFormat.c_str(), lcTimeInfo);
+    }
 
     return timeBuffer;
 }
