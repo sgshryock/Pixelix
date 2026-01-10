@@ -52,6 +52,21 @@ To enter AP mode for WiFi configuration:
 - Connect to the `pixelix-XXXXXXXX` WiFi network
 - The captive portal will appear for WiFi configuration
 
+## Troubleshooting
+
+When debugging issues, always consider whether **firmware**, **filesystem**, or **both** need to be reflashed:
+
+| Symptom | Likely Cause | Solution |
+|---------|--------------|----------|
+| Web pages not loading / 404 errors | Missing filesystem | `pio run -t uploadfs` |
+| Captive portal shows wrong page | Missing/outdated filesystem | `pio run -t uploadfs` |
+| API endpoints not working | Outdated firmware | `pio run -t upload` |
+| New features not appearing | Outdated firmware and/or filesystem | Reflash both |
+| Device boots to factory/updater | OTA data pointing to wrong partition | `pio run -t upload` (rewrites OTA data) |
+| Complete malfunction after erase | Missing firmware or filesystem | Reflash both (firmware first, then filesystem) |
+
+**After a flash erase (`-t erase`), ALWAYS reflash both firmware AND filesystem.**
+
 ## Notes
 - Build artifacts go to `.pio/build/`
 - Release binaries can be copied to `release/` folder
