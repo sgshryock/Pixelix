@@ -17,3 +17,4 @@ doc/doxygen/doxygen_warnings.txt
 firmware.map
 out
 src/Generated/
+release/
