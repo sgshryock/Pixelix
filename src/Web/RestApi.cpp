@@ -43,6 +43,7 @@
 #include "FileSystem.h"
 #include "RestUtil.h"
 #include "SlotList.h"
+#include "SessionAuthMiddleware.h"
 
 #include <Util.h>
 #include <WiFi.h>
@@ -126,6 +127,9 @@ static void                         handleOtaAbort(AsyncWebServerRequest* reques
  * Local Variables
  *****************************************************************************/
 
+/** Session-based authentication middleware for REST API endpoints. */
+static SessionAuthMiddleware gSessionAuthMiddleware;
+
 /** Table of content types and the file extensions they will be derived from. */
 static const ContentTypeElem contentTypeTable[] = {
     { ".html", "text/html" },
@@ -174,6 +178,10 @@ void RestApi::init(AsyncWebServer& srv)
         settings.close();
     }
 
+    /* Configure session authentication middleware with credentials. */
+    gSessionAuthMiddleware.setUsername(webLoginUser.c_str());
+    gSessionAuthMiddleware.setPassword(webLoginPassword.c_str());
+
     /* Public endpoints (read-only, non-sensitive) */
     (void)srv.on("/rest/api/v1/display/fadeEffect", handleFadeEffect);
     (void)srv.on("/rest/api/v1/display/slots", handleSlots);
@@ -185,37 +193,37 @@ void RestApi::init(AsyncWebServer& srv)
 
     /* Protected endpoints (require authentication) */
     (void)srv.on("/rest/api/v1/plugin/install", handlePluginInstall)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/plugin/uninstall", handlePluginUninstall)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/settings", handleSettings)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/setting", handleSetting)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/fs/file", HTTP_GET, handleFileGet)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/fs/file", HTTP_POST, handleFilePost, uploadHandler)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/fs/file", HTTP_DELETE, handleFileDelete)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/fs", handleFilesystem)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/partitionChange", HTTP_POST, handlePartitionChange)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/shutdown", HTTP_POST, handleShutdown)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/homeAssistant/automaticDiscovery/disable", HTTP_POST, handleHomeAssistantAutomaticDiscoveryDisable)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
 
     /* OTA Update endpoints */
     (void)srv.on("/rest/api/v1/ota/check", HTTP_POST, handleOtaCheck)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/ota/status", HTTP_GET, handleOtaStatus)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/ota/update", HTTP_POST, handleOtaUpdate)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
     (void)srv.on("/rest/api/v1/ota/abort", HTTP_POST, handleOtaAbort)
-        .setAuthentication(webLoginUser.c_str(), webLoginPassword.c_str());
+        .addMiddleware(&gSessionAuthMiddleware);
 }
 
 /**
