@@ -143,14 +143,16 @@ Note, that the LED panel topology and the display width/height can not be change
 
 ## Very First Startup
 
-If the device starts the very first time, the wifi station SSID and passphrase settings are empty. They can be configured in two possible ways:
+If the device starts the very first time, the wifi station SSID and passphrase settings are empty. The device will **automatically start in Access Point (AP) mode** - no button press required. They can be configured in two possible ways:
 
-1. Using the browser and set them in the captive portal.
+1. Using the browser and set them in the captive portal (recommended).
 2. Using a terminal connecting via usb.
 
 ### Variant 1: Configure wifi station SSID and passphrase with the browser
 
-Restart the device and **keep the button pressed** until it shows the SSID of the wifi access point, spawned by PIXELIX. Search for it with your mobile device and connect.
+On first boot (or after a flash erase), PIXELIX automatically enters AP mode and displays the SSID of its wifi access point. Search for it with your mobile device and connect.
+
+> **Note:** To manually force AP mode when wifi credentials are already configured, hold the user button (typically GPIO 4) during boot.
 
 - SSID: **pixelix-&lt;DEVICE-ID&gt;**
 - Passphrase: **Luke, I am your father.**

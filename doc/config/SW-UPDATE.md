@@ -115,7 +115,31 @@ The update consists of two parts:
 
 ## Update via USB
 
-Steps:
+### Using PlatformIO Command Line
+
+For a clean flash (recommended for first-time setup):
+
+```bash
+# Step 1: Erase flash and upload firmware (includes bootloader, partition table, factory, and app)
+pio run -e <your-board-environment> -t erase -t upload
+
+# Step 2: Upload filesystem (REQUIRED - contains web UI, captive portal, icons, etc.)
+pio run -e <your-board-environment> -t uploadfs
+```
+
+For regular updates (after initial flash):
+
+```bash
+# Upload firmware only (when code changes but web files haven't changed)
+pio run -e <your-board-environment> -t upload
+
+# Upload filesystem only (when web files change but code hasn't changed)
+pio run -e <your-board-environment> -t uploadfs
+```
+
+**Note:** Replace `<your-board-environment>` with your board, e.g., `esp32-s3-devkitc-1-n16r8v-LED-32x8` or `ulanzi-tc001-LED-32x8`.
+
+### Using VSCode GUI
 
 1. Load workspace in VSCode.
 2. Change to PlatformIO toolbar (click on the head of the ant in the left column).
